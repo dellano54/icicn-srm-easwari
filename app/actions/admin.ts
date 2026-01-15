@@ -9,7 +9,12 @@ import { FEE_AMOUNT_INR } from '@/lib/constants';
 
 // --- ADMIN ACTIONS ---
 
-export async function adminDecision(paperId: string, decision: 'ACCEPT' | 'REJECT', tier?: 'TIER_1' | 'TIER_2' | 'TIER_3') {
+export async function adminDecision(
+  paperId: string, 
+  decision: 'ACCEPT' | 'REJECT', 
+  tier: 'TIER_1' | 'TIER_2' | 'TIER_3' | undefined,
+  _formData: FormData
+) {
     const session = await getSession();
     if (!session || session.role !== 'admin') return { message: 'Unauthorized' };
 
@@ -43,7 +48,7 @@ export async function adminDecision(paperId: string, decision: 'ACCEPT' | 'REJEC
     return { success: true };
 }
 
-export async function verifyPayment(paperId: string) {
+export async function verifyPayment(paperId: string, _formData: FormData) {
     const session = await getSession();
     if (!session || session.role !== 'admin') return { message: 'Unauthorized' };
 
