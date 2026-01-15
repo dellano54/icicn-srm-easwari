@@ -1,0 +1,24 @@
+the app consists of three portals: 
+1) user portal
+2) reviewer portal
+3) admin portal
+
+1. user flow: 
+
+the user dashboard should be like how it is like of right now, (the required datas as of now, don't change the data inputs). here are the constraint two things. the paper should have like max of 4 pages, and the palg same too. 
+we keep the form same like now. apply like per paper max mb should be 3 MB. 
+
+2. reviewer: 
+
+the reviewer is like split into multiple domains according to the tags in the current website. when an user submits an paper, the reviewer from the same tags randomly gets assigned of the paper (any 3 reviewer). The reviewer is supposed to write feedbacks and whether to accept or reject the paper. if two reviewrs accept the paper. the paper along with the information and the review points would be pushed to the admin. the reviewer also assigns like what tier the paper is three tiers (1, 2, 3) (1 being top). 
+
+3. admin:
+
+the admin dashboard shows the necessary stats like how many paper got assigned to which reviewer, and who reviewed and responded and who didn't respond yet. and how many applied etc etc all the necessary datas.
+the admin makes the final decision of like if to accept or reject the paper. if the paper is rejected delete from the blob. and when the paper is accepted send an mail to the user. that their mail is approved and also in the user dashboard show an QR which is used for the payment. the user can pay using UPI, and wait until the admin approves, the admin has an payment, accepting portal where the admin can check and verify if the team has paid. make the payment like the user should upload an screenshot of the UPI payment too.
+
+the admin should be able to push, on large scale too like (accept or reject) sort by tiers.
+
+as payment is approved dynamically delete the screenshot images from the blob storage.
+
+   
