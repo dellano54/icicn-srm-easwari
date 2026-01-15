@@ -35,3 +35,7 @@ export type RegistrationFormState = {
     teamId?: string; // On success
     teamEmail?: string; // On success
 };
+
+export type AuthFormState = {
+    message?: string;
+};

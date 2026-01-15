@@ -5,13 +5,14 @@ import { createSession, deleteSession } from '@/lib/session';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { AuthFormState } from '@/lib/definitions';
 
 const LoginSchema = z.object({
     email: z.string().email(),
     teamId: z.string().min(1)
 });
 
-export async function loginTeam(prevState: any, formData: FormData) {
+export async function loginTeam(prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
     const email = formData.get('email') as string;
     const teamId = formData.get('teamId') as string;
 
@@ -46,7 +47,7 @@ export async function loginTeam(prevState: any, formData: FormData) {
     redirect('/dashboard');
 }
 
-export async function loginSystem(prevState: any, formData: FormData) {
+export async function loginSystem(prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const role = formData.get('role') as 'admin' | 'reviewer';

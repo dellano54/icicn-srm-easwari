@@ -12,8 +12,10 @@ import { MemberCard } from '@/components/register/MemberCard';
 import { registerTeam } from '@/app/actions/register';
 import { ArrowLeft, Plus, CheckCircle, Copy, Loader2, ArrowRight } from 'lucide-react';
 
+import { RegistrationFormState } from '@/lib/definitions';
+
 export default function RegisterPage() {
-  const [state, dispatch, isPending] = useActionState(registerTeam, {});
+  const [state, dispatch, isPending] = useActionState<RegistrationFormState, FormData>(registerTeam, { message: '', errors: {} });
   
   const [formData, setFormData] = useState<LocalFormData>({
     teamName: '',

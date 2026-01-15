@@ -81,10 +81,16 @@ export default async function AdminDashboard() {
                         </div>
 
                         <div className="flex gap-2">
-                            <form action={adminDecision.bind(null, paper.id, 'ACCEPT', 'TIER_1')}>
+                            <form action={async (formData) => {
+                                'use server';
+                                await adminDecision(paper.id, 'ACCEPT', 'TIER_1', formData);
+                            }}>
                                 <button className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">Accept</button>
                             </form>
-                            <form action={adminDecision.bind(null, paper.id, 'REJECT', undefined)}>
+                            <form action={async (formData) => {
+                                'use server';
+                                await adminDecision(paper.id, 'REJECT', undefined, formData);
+                            }}>
                                 <button className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700">Reject</button>
                             </form>
                         </div>
@@ -118,7 +124,10 @@ export default async function AdminDashboard() {
                             </div>
                         )}
 
-                        <form action={verifyPayment.bind(null, paper.id)}>
+                        <form action={async (formData) => {
+                            'use server';
+                            await verifyPayment(paper.id, formData);
+                        }}>
                             <button className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Approve Payment</button>
                         </form>
                     </div>

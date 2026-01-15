@@ -46,7 +46,10 @@ export default async function ReviewerDashboard() {
                                 </div>
                             </div>
                             
-                            <form action={submitReview.bind(null, review.id)} className="bg-slate-50 p-4 rounded-lg">
+                            <form action={async (formData) => {
+                                'use server';
+                                await submitReview(review.id, formData);
+                            }} className="bg-slate-50 p-4 rounded-lg">
                                 <div className="mb-4">
                                     <label className="block text-sm font-semibold mb-1">Feedback</label>
                                     <textarea name="feedback" required className="w-full p-2 rounded border border-slate-300 text-sm" rows={3}></textarea>

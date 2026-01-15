@@ -6,8 +6,10 @@ import { loginTeam } from '@/app/actions/auth';
 import { InputField } from '@/components/ui/InputField';
 import { Mail, Lock, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 
+import { AuthFormState } from '@/lib/definitions';
+
 export default function LoginPage() {
-  const [state, dispatch, isPending] = useActionState(loginTeam, {});
+  const [state, dispatch, isPending] = useActionState<AuthFormState, FormData>(loginTeam, { message: '' });
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
