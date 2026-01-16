@@ -16,7 +16,8 @@ This full-stack application manages the entire lifecycle of a conference submiss
 ### 👨‍🏫 Reviewer Portal
 *   **Automated Assignment:** Papers are automatically assigned to 3 qualified reviewers based on matching domain tags.
 *   **Review Interface:** View papers, submit feedback, decisions (Accept/Reject), and assign Tiers (1, 2, 3).
-*   **Consensus Logic:** Automatically moves a paper to "Awaiting Decision" status when it receives 2 "Accept" votes.
+*   **Real-time Consensus:** Reviewers can see the anonymous voting status of other reviewers (Accept/Reject counts) in real-time.
+*   **Consensus Logic:** Automatically moves a paper to "Awaiting Decision" status when it receives 2 "Accept" or 2 "Reject" votes, triggering Admin review.
 
 ### 🛡️ Admin Portal
 *   **Dashboard Stats:** Overview of total submissions, acceptance rates, and revenue.
@@ -96,9 +97,9 @@ This full-stack application manages the entire lifecycle of a conference submiss
 | Role | Email | Password |
 | :--- | :--- | :--- |
 | **Admin** | `admin@icicn.org` | `admin-secure-password` |
-| **Reviewer 1** (AI/ML) | `reviewer1@icicn.org` | `password123` |
-| **Reviewer 2** (Robotics) | `reviewer2@icicn.org` | `password123` |
-| **Reviewer 3** (All) | `reviewer3@icicn.org` | `password123` |
+| **Reviewers** | `reviewer-[domain-slug]-[1-3]@icicn.org` | `password123` |
+
+*Example:* `reviewer-artificial-intelligence-1@icicn.org`
 
 ### User Login: `/login`
 

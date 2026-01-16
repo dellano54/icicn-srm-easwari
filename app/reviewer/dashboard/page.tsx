@@ -11,7 +11,14 @@ export default async function ReviewerDashboard() {
     where: { id: session.userId },
     include: { 
         reviews: { 
-            include: { paper: { include: { user: true } } } 
+            include: { 
+                paper: { 
+                    include: { 
+                        user: true,
+                        reviews: true // Include all reviews for this paper
+                    } 
+                } 
+            } 
         } 
     }
   });
@@ -46,6 +53,30 @@ export default async function ReviewerDashboard() {
                                 </div>
                             </div>
                             
+                            {/* Consensus Status */}
+                            <div className="mb-4 bg-slate-100 p-3 rounded-lg border border-slate-200">
+                                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Review Consensus (Real-time)</h4>
+                                <div className="flex gap-4 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span>Accepts: {review.paper.reviews.filter((r: any) => r.decision === 'ACCEPT').length}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                        <span>Rejects: {review.paper.reviews.filter((r: any) => r.decision === 'REJECT').length}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-slate-500">
+                                        <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                        <span>Pending: {review.paper.reviews.filter((r: any) => !r.isCompleted).length}</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-2">
+                                    {review.paper.reviews.filter((r: any) => r.decision === 'ACCEPT').length >= 2 
+                                        ? "⚠️ Consensus Reached: Paper will be sent to Admin." 
+                                        : "Waiting for consensus (2 Accepts required)."}
+                                </p>
+                            </div>
+
                             <form action={async (formData) => {
                                 'use server';
                                 await submitReview(review.id, formData);
