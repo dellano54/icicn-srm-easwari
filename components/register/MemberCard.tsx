@@ -190,14 +190,78 @@ export const MemberCard: React.FC<MemberCardProps> = ({
             onChange={(e) => onUpdate(member.id, 'email', e.target.value)}
             required
           />
-          <InputField
-            label="Phone Number"
-            type="tel"
-            placeholder="+91 9876543210"
-            value={member.phone}
-            onChange={(e) => onUpdate(member.id, 'phone', e.target.value)}
-            required
-          />
+          
+          <div className="w-full">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Phone Number <span className="text-blue-500 ml-1">*</span>
+            </label>
+            <div className="flex gap-2">
+              <div className="relative w-28 shrink-0">
+                <select 
+                  className="w-full h-full appearance-none bg-white border border-slate-300 text-slate-700 text-sm rounded-xl px-3 pr-8 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer"
+                  onChange={(e) => {
+                    // Extract current number without code if possible, or just append. 
+                    // Simpler: Just update a prefix state if we were splitting, but here 'phone' is one string.
+                    // We'll assume the user types the number and we prepend this code, OR better:
+                    // Let's parse the existing phone to see if it starts with a code, else default to +91.
+                    // For this simple implementation, we'll just prepend the code to the display value or handle it visually.
+                    // A better UX is to have a separate 'code' and 'number' state, but 'member.phone' is a string.
+                    // We will just assume the user enters the number in the input, and we prepend the code on save/update? 
+                    // No, 'onUpdate' updates the single string.
+                    // Strategy: We will strip the old code and add the new one.
+                    
+                    const newCode = e.target.value;
+                    const currentPhone = member.phone || '';
+                    // Simple heuristic: If phone starts with '+', replace until space or just manage separate inputs visually
+                    // BUT 'member.phone' is the source of truth.
+                    
+                    // improved approach: 
+                    // 1. Keep 'phone' field as the full string.
+                    // 2. We can't easily separate them without strict formatting.
+                    // Let's just append the code to the input value if it's empty, or replace the prefix.
+                    
+                    // Actually, to keep it robust: The input below will handle the "number" part, and this select handles the "code".
+                    // We need to split member.phone into code + number for this UI to work perfectly, 
+                    // or just prepend the code when sending to 'onUpdate'.
+                    
+                    // Let's try a regex split.
+                    const match = currentPhone.match(/^(\+\d+)\s*(.*)$/);
+                    const oldNumberPart = match ? match[2] : currentPhone;
+                    onUpdate(member.id, 'phone', `${newCode} ${oldNumberPart}`);
+                  }}
+                  value={member.phone?.split(' ')[0] && member.phone.includes('+') ? member.phone.split(' ')[0] : '+91'}
+                >
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+86">🇨🇳 +86</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+65">🇸🇬 +65</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+              </div>
+              <div className="relative w-full">
+                <input
+                  type="tel"
+                  placeholder="98765 43210"
+                  className="w-full bg-white text-slate-900 border border-slate-300 rounded-xl px-4 py-3 text-sm placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  value={member.phone?.replace(/^(\+\d+)\s*/, '') || ''}
+                  onChange={(e) => {
+                     const currentCode = member.phone?.match(/^(\+\d+)/)?.[0] || '+91';
+                     onUpdate(member.id, 'phone', `${currentCode} ${e.target.value}`);
+                  }}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
           <InputField
             label="Department"
             placeholder="e.g. Computer Science"

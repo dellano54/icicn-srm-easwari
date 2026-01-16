@@ -1,6 +1,6 @@
-# ICICN '26 Registration Portal
+# ICCICN '26 Registration Portal
 
-The official registration and conference management portal for the **International Conference on Computational Intelligence & Computer Networks (ICICN '26)**.
+The official registration and conference management portal for the **International Conference on Computational Intelligence & Computer Networks (ICCICN '26)**.
 
 This full-stack application manages the entire lifecycle of a conference submission: from team registration and paper upload to peer review, acceptance, payment verification, and final registration.
 

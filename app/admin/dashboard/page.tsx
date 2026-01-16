@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
                                     <span className={`font-bold ${r.decision === 'ACCEPT' ? 'text-green-600' : 'text-red-600'}`}>
                                         {r.decision}
                                     </span> 
-                                    ({r.tier}): "{r.feedback}"
+                                    ({r.tier}): &quot;{r.feedback}&quot;
                                 </div>
                             ))}
                         </div>

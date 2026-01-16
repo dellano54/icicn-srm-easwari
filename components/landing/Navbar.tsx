@@ -5,7 +5,7 @@ export const Navbar = () => {
   return (
     <div className="absolute top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center">
       <div className="text-xl font-extrabold text-slate-900 tracking-tighter">
-        ICICN<span className="text-blue-600">'26</span>
+        ICCICN<span className="text-blue-600">&apos;26</span>
       </div>
       <Link 
         href="/login"

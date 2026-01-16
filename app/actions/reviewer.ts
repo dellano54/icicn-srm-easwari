@@ -23,10 +23,11 @@ export async function submitReview(reviewId: string, formData: FormData) {
         include: { paper: { include: { reviews: true } } }
     });
 
-    // Check logic: If 2 reviewers ACCEPT, move to AWAITING_DECISION
-    const accepts = review.paper.reviews.filter(r => r.decision === 'ACCEPT').length;
+    // Logic: If 2 or more reviewers have completed their reviews, move to AWAITING_DECISION
+    // This allows Admin to see the paper and make a final decision based on the feedback.
+    const completedReviews = review.paper.reviews.filter(r => r.isCompleted).length;
     
-    if (accepts >= 2 && review.paper.status === 'UNDER_REVIEW') {
+    if (completedReviews >= 2 && review.paper.status === 'UNDER_REVIEW') {
         await prisma.paper.update({
             where: { id: review.paper.id },
             data: { status: 'AWAITING_DECISION' }

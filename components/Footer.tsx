@@ -13,7 +13,7 @@ export const Footer = () => {
         {/* Brand Column */}
         <div className="space-y-6">
           <div className="inline-block">
-             <h3 className="text-3xl font-extrabold text-white tracking-tight">ICICN <span className="text-blue-500">'26</span></h3>
+             <h3 className="text-3xl font-extrabold text-white tracking-tight">ICCICN <span className="text-blue-500">&apos;26</span></h3>
              <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] mt-1 font-bold">International Conference</p>
           </div>
           <p className="text-slate-400 text-sm leading-relaxed max-w-md">
@@ -46,7 +46,13 @@ export const Footer = () => {
               <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center mr-3 group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors shrink-0">
                  <Phone className="w-4 h-4" />
               </div>
-              <a href="tel:+918870037045" className="pt-2 hover:text-blue-400 transition-colors">+91 88700 37045</a>
+              <div className="pt-1">
+                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-tight">Convenors</p>
+                <div className="flex flex-col">
+                  <a href="tel:+918870037045" className="hover:text-blue-400 transition-colors">Dr. K. Sundar: +91 88700 37045</a>
+                  <a href="tel:+91994187470" className="hover:text-blue-400 transition-colors">Dr. M. Mohana: +91 99418 7470</a>
+                </div>
+              </div>
             </li>
             <li className="flex items-start group sm:col-span-2 md:col-span-1">
               <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center mr-3 group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors shrink-0">
@@ -63,7 +69,7 @@ export const Footer = () => {
 
       {/* Copyright */}
       <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-        <p>&copy; 2026 ICICN. All rights reserved.</p>
+        <p>&copy; 2026 ICCICN. All rights reserved.</p>
         <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>

@@ -19,7 +19,7 @@ export const Hero = () => {
           </div>
           
           <h1 className="reveal-text text-8xl md:text-[10rem] font-extrabold tracking-tighter text-slate-900 leading-[0.9]">
-            ICICN <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">'26</span>
+            ICCICN <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">&apos;26</span>
           </h1>
           
           <p className="reveal-text text-xl md:text-2xl text-slate-500 font-light max-w-3xl mx-auto leading-relaxed">

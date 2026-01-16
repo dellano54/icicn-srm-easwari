@@ -104,7 +104,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         // 9. Send Confirmation Email
         await sendEmail(
             leadEmail,
-            "ICICN '26 Registration Confirmed",
+            "ICCICN '26 Registration Confirmed",
             `<h1>Registration Successful</h1>
              <p>Dear ${members[0].name},</p>
              <p>Your team <strong>${teamName}</strong> has been successfully registered.</p>

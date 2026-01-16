@@ -37,6 +37,12 @@ export async function assignReviewers(paperId: string, domainTags: string[]) {
       skipDuplicates: true // Avoid error if somehow already assigned
     });
 
+    // Update Paper status to UNDER_REVIEW
+    await prisma.paper.update({
+      where: { id: paperId },
+      data: { status: 'UNDER_REVIEW' }
+    });
+
     console.log(`Assigned ${selectedReviewers.length} reviewers to paper ${paperId}`);
 
   } catch (error) {

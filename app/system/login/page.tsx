@@ -36,7 +36,7 @@ export default function SystemLoginPage() {
                     label="Email Address"
                     name="email"
                     type="email"
-                    placeholder="official@icicn.org"
+                    placeholder="official@iccicn.org"
                     required
                     icon={<Mail className="w-5 h-5" />}
                     className="bg-slate-900 border-slate-700 text-slate-200 focus:bg-slate-800 placeholder:text-slate-600"

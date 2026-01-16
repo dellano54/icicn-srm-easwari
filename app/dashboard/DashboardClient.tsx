@@ -205,7 +205,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                     </div>
                     <h3 className="text-3xl font-extrabold mb-2">Registration Confirmed</h3>
                     <p className="text-emerald-50 max-w-md mx-auto">
-                        We look forward to seeing you at ICICN '26! Your presentation slot details will be emailed shortly.
+                        We look forward to seeing you at ICCICN '26! Your presentation slot details will be emailed shortly.
                     </p>
                 </div>
             )}
@@ -243,7 +243,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                 <p className="text-sm text-blue-600 mb-4">
                     If you have questions about the review process or your status, please contact the chair.
                 </p>
-                <a href="mailto:chair@icicn.org" className="text-sm font-bold text-blue-700 hover:underline">Contact Chair &rarr;</a>
+                <a href="mailto:chair@iccicn.org" className="text-sm font-bold text-blue-700 hover:underline">Contact Chair &rarr;</a>
             </div>
         </div>
 

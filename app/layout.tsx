@@ -10,7 +10,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ICICN '26 Registration",
+  title: "ICCICN '26 Registration",
   description: "International Conference on Computational Intelligence & Computer Networks",
 };
 
