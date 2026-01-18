@@ -32,4 +32,5 @@ export interface FormData {
   plagiarismFile: File | null;
   domains: string[];
   members: Member[];
+  mode: 'ONLINE' | 'OFFLINE';
 }

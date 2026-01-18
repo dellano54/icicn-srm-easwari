@@ -1,13 +1,19 @@
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { formatDate } from '@/lib/utils';
-import { adminDecision, verifyPayment } from '@/app/actions/admin';
+import { PendingPapersTable } from '@/components/admin/PendingPapersTable';
+import { PaymentVerificationTable } from '@/components/admin/PaymentVerificationTable';
+import { AcceptedPapersTable } from '@/components/admin/AcceptedPapersTable';
+import { RejectedPapersTable } from '@/components/admin/RejectedPapersTable';
+import { TeamsTable } from '@/components/admin/TeamsTable';
+import { PaymentsTable } from '@/components/admin/PaymentsTable';
+import { AdminDashboardClient } from '@/components/admin/AdminDashboardClient';
 
 export default async function AdminDashboard() {
   const session = await getSession();
   if (!session || session.role !== 'admin') redirect('/login');
 
+  // 1. Fetch Papers
   const pendingPapers = await prisma.paper.findMany({
     where: { status: 'AWAITING_DECISION' },
     include: { user: true, reviews: true }
@@ -18,124 +24,149 @@ export default async function AdminDashboard() {
     include: { user: true }
   });
 
+  const acceptedPapers = await prisma.paper.findMany({
+    where: { status: { in: ['ACCEPTED_UNPAID', 'REGISTERED'] } },
+    include: { user: true },
+    orderBy: { updatedAt: 'desc' }
+  });
+
+  const rejectedPapers = await prisma.paper.findMany({
+    where: { status: 'REJECTED' },
+    include: { user: true },
+    orderBy: { updatedAt: 'desc' }
+  });
+
+  // 2. Fetch Extra Data for New Views
+  const allTeams = await prisma.user.findMany({
+    include: { paper: true, members: { select: { id: true } } }, // Optimizing select
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const confirmedPayments = await prisma.paper.findMany({
+    where: { status: 'REGISTERED' },
+    include: { user: true },
+    orderBy: { updatedAt: 'desc' }
+  });
+
+  // 3. Stats
   const stats = {
-    total: await prisma.paper.count(),
-    accepted: await prisma.paper.count({ where: { status: { in: ['ACCEPTED_UNPAID', 'REGISTERED'] } } }),
-    registered: await prisma.paper.count({ where: { status: 'REGISTERED' } }),
-    rejected: await prisma.paper.count({ where: { status: 'REJECTED' } })
+    total: allTeams.length,
+    accepted: acceptedPapers.length,
+    rejected: rejectedPapers.length,
+    pending: pendingPapers.length,
+    payment: paymentPapers.length
   };
 
-  return (
-    <div className="min-h-screen bg-slate-100 p-8">
-      <h1 className="text-3xl font-bold text-slate-800 mb-8">Admin Dashboard</h1>
+  // Reviewer Stats (for overview if needed, keeping it minimal for now or reusing logic)
+  const allPapers = await prisma.paper.findMany({ select: { domains: true } });
+  const domainCounts: Record<string, number> = {};
+  allPapers.forEach(p => {
+    p.domains.forEach(d => {
+        domainCounts[d] = (domainCounts[d] || 0) + 1;
+    });
+  });
+  const sortedDomains = Object.entries(domainCounts).sort((a, b) => b[1] - a[1]);
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-6 mb-12">
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-            <div className="text-slate-500 text-sm">Total Submissions</div>
-            <div className="text-3xl font-bold">{stats.total}</div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-            <div className="text-slate-500 text-sm">Accepted</div>
-            <div className="text-3xl font-bold text-green-600">{stats.accepted}</div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-            <div className="text-slate-500 text-sm">Registered (Paid)</div>
-            <div className="text-3xl font-bold text-blue-600">{stats.registered}</div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-            <div className="text-slate-500 text-sm">Rejected</div>
-            <div className="text-3xl font-bold text-red-600">{stats.rejected}</div>
-        </div>
-      </div>
+  const reviewers = await prisma.reviewer.findMany({
+    include: { reviews: true }
+  });
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Pending Decisions */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
-                <h2 className="text-xl font-bold">Pending Decisions</h2>
+
+  // --- View Construction ---
+  const OverviewView = (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-800">Pending Decisions</h2>
+                        <p className="text-xs text-slate-500 mt-1">Papers with reviewer consensus</p>
+                    </div>
+                    <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                        {pendingPapers.length} Pending
+                    </span>
+                </div>
+                <PendingPapersTable papers={pendingPapers} />
             </div>
-            <div className="divide-y divide-slate-100">
-                {pendingPapers.map(paper => (
-                    <div key={paper.id} className="p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="font-bold text-lg">{paper.user.teamName}</h3>
-                                <p className="text-sm text-slate-500">Domains: {paper.domains.join(', ')}</p>
-                            </div>
-                            <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">
-                                Awaiting Decision
-                            </span>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-800">Payment Verification</h2>
+                        <p className="text-xs text-slate-500 mt-1">Confirm payment screenshots</p>
+                    </div>
+                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                        {paymentPapers.length} Pending
+                    </span>
+                </div>
+                <PaymentVerificationTable papers={paymentPapers} />
+            </div>
+        </div>
+
+        <div className="space-y-8">
+             {/* Domain Distribution */}
+             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <h3 className="font-bold text-slate-800 mb-4">Papers by Domain</h3>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {sortedDomains.map(([domain, count]) => (
+                        <div key={domain} className="flex justify-between items-center text-sm">
+                            <span className="text-slate-600 truncate max-w-[200px]" title={domain}>{domain}</span>
+                            <span className="font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs">{count}</span>
                         </div>
+                    ))}
+                </div>
+            </div>
+
+             {/* Reviewer Performance */}
+             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <h3 className="font-bold text-slate-800 mb-4">Reviewer Stats</h3>
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {reviewers.map(reviewer => {
+                        const total = reviewer.reviews.length;
+                        const completed = reviewer.reviews.filter(r => r.isCompleted).length;
+                        const pending = total - completed;
                         
-                        <div className="mb-4 bg-slate-50 p-4 rounded-lg">
-                            <p className="text-sm font-semibold mb-2">Reviewer Feedback:</p>
-                            {paper.reviews.map((r, i) => (
-                                <div key={i} className="text-xs text-slate-600 mb-1">
-                                    <span className={`font-bold ${r.decision === 'ACCEPT' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {r.decision}
-                                    </span> 
-                                    ({r.tier}): &quot;{r.feedback}&quot;
+                        return (
+                            <div key={reviewer.id} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                <div className="font-bold text-sm text-slate-700 truncate mb-2">{reviewer.name}</div>
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div>
+                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Total</div>
+                                        <div className="font-bold text-slate-800">{total}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] text-green-600 uppercase font-bold">Done</div>
+                                        <div className="font-bold text-green-600">{completed}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] text-amber-500 uppercase font-bold">Pend</div>
+                                        <div className="font-bold text-amber-600">{pending}</div>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-
-                        <div className="flex gap-2">
-                            <form action={async (formData) => {
-                                'use server';
-                                await adminDecision(paper.id, 'ACCEPT', 'TIER_1', formData);
-                            }}>
-                                <button className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">Accept</button>
-                            </form>
-                            <form action={async (formData) => {
-                                'use server';
-                                await adminDecision(paper.id, 'REJECT', undefined, formData);
-                            }}>
-                                <button className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700">Reject</button>
-                            </form>
-                        </div>
-                    </div>
-                ))}
-                {pendingPapers.length === 0 && <div className="p-6 text-slate-500">No papers awaiting decision.</div>}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
-
-        {/* Payment Verification */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
-                <h2 className="text-xl font-bold">Payment Verification</h2>
-            </div>
-            <div className="divide-y divide-slate-100">
-                {paymentPapers.map(paper => (
-                    <div key={paper.id} className="p-6">
-                         <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="font-bold text-lg">{paper.user.teamName}</h3>
-                                <p className="text-sm text-slate-500">Email: {paper.user.email}</p>
-                            </div>
-                            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
-                                Verify Payment
-                            </span>
-                        </div>
-                        
-                        {paper.paymentScreenshotUrl && (
-                            <div className="mb-4">
-                                <a href={paper.paymentScreenshotUrl} target="_blank" className="text-blue-600 underline text-sm">View Screenshot</a>
-                            </div>
-                        )}
-
-                        <form action={async (formData) => {
-                            'use server';
-                            await verifyPayment(paper.id, formData);
-                        }}>
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Approve Payment</button>
-                        </form>
-                    </div>
-                ))}
-                {paymentPapers.length === 0 && <div className="p-6 text-slate-500">No pending payments.</div>}
-            </div>
-        </div>
-      </div>
     </div>
+  );
+
+  return (
+    <AdminDashboardClient 
+        pendingCount={stats.pending}
+        paymentCount={stats.payment}
+        acceptedCount={stats.accepted}
+        rejectedCount={stats.rejected}
+        totalCount={stats.total}
+    >
+        {{
+            overview: OverviewView,
+            teams: <TeamsTable teams={allTeams} />,
+            payments: <PaymentsTable payments={confirmedPayments} />,
+            accepted: <AcceptedPapersTable papers={acceptedPapers} />,
+            rejected: <RejectedPapersTable papers={rejectedPapers} />
+        }}
+    </AdminDashboardClient>
   );
 }

@@ -38,3 +38,18 @@ export async function submitReview(reviewId: string, formData: FormData) {
     revalidatePath('/reviewer/dashboard');
     return { success: true };
 }
+
+export async function markReviewViewed(reviewId: string) {
+    const session = await getSession();
+    if (!session || session.role !== 'reviewer') return { message: 'Unauthorized' };
+
+    await prisma.review.update({
+        where: { id: reviewId },
+        data: { viewedAt: new Date() }
+    });
+    
+    // No revalidate needed necessarily if we just want to track it silently, 
+    // but revalidating updates the UI to show "Viewed" status if we want.
+    revalidatePath('/reviewer/dashboard'); 
+    return { success: true };
+}

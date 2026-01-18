@@ -10,7 +10,7 @@ import { FileUpload } from '@/components/ui/FileUpload';
 import { DomainSelector } from '@/components/ui/DomainSelector';
 import { MemberCard } from '@/components/register/MemberCard';
 import { registerTeam } from '@/app/actions/register';
-import { ArrowLeft, Plus, CheckCircle, Copy, Loader2, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Plus, CheckCircle, Copy, Loader2, ArrowRight, Monitor, MapPin } from 'lucide-react';
 
 import { RegistrationFormState } from '@/lib/definitions';
 
@@ -24,6 +24,7 @@ export default function RegisterPage() {
     paperFile: null,
     plagiarismFile: null,
     domains: [],
+    mode: 'ONLINE',
     members: [{ 
       id: uuidv4(), 
       name: '', 
@@ -118,6 +119,7 @@ export default function RegisterPage() {
     payload.append('teamName', formData.teamName);
     payload.append('mentorName', formData.mentorName);
     payload.append('mentorDept', formData.mentorDept);
+    payload.append('mode', formData.mode);
     payload.append('domains', JSON.stringify(formData.domains));
     // We send members as a JSON string for easier parsing on server
     payload.append('members', JSON.stringify(formData.members));
@@ -282,6 +284,29 @@ export default function RegisterPage() {
                       />
                   </div>
                   
+                  {/* MODE SELECTOR */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Participation Mode <span className="text-blue-500 ml-1">*</span></label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, mode: 'ONLINE' }))}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${formData.mode === 'ONLINE' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-white hover:border-blue-300'}`}
+                        >
+                            <Monitor className="w-6 h-6 mb-2" />
+                            <span className="font-bold text-sm">Online</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, mode: 'OFFLINE' }))}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${formData.mode === 'OFFLINE' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-white hover:border-blue-300'}`}
+                        >
+                            <MapPin className="w-6 h-6 mb-2" />
+                            <span className="font-bold text-sm">Offline (In-Person)</span>
+                        </button>
+                    </div>
+                  </div>
+
                   <div className="md:col-span-2">
                     <DomainSelector 
                       selectedDomains={formData.domains}

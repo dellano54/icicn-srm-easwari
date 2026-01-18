@@ -29,6 +29,11 @@ enum Decision {
   REJECT
 }
 
+enum RegistrationMode {
+  ONLINE
+  OFFLINE
+}
+
 // User (Team) Model
 model User {
   id            String   @id @default(uuid())
@@ -38,6 +43,7 @@ model User {
   mentorName    String
   mentorDept    String
   country       String   @default("India")
+  mode          RegistrationMode @default(ONLINE)
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -69,6 +75,7 @@ model Paper {
   paperUrl        String
   plagiarismUrl   String
   paymentScreenshotUrl String?
+  paymentSenderName    String? // Name of payer (UPI/Bank)
   
   domains         String[]    // Array of domain tags
   
@@ -104,6 +111,7 @@ model Review {
   tier        Tier?
   
   isCompleted Boolean  @default(false)
+  viewedAt    DateTime?
   
   paperId     String
   paper       Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)

@@ -16,6 +16,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         mentorDept: formData.get('mentorDept') as string,
         domains: JSON.parse(formData.get('domains') as string || '[]'),
         members: JSON.parse(formData.get('members') as string || '[]'),
+        mode: formData.get('mode') as 'ONLINE' | 'OFFLINE',
     };
 
     // 2. Validate Fields
@@ -28,7 +29,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         };
     }
 
-    const { teamName, mentorName, mentorDept, domains, members } = validatedFields.data;
+    const { teamName, mentorName, mentorDept, domains, members, mode } = validatedFields.data;
 
     // 3. Validate Files
     const paperFile = formData.get('paperFile') as File;
@@ -75,6 +76,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
                 mentorName,
                 mentorDept,
                 country: members[0].country, // Defaulting to lead's country
+                mode: mode,
                 members: {
                     create: members.map((m, index) => ({
                         ...m,
@@ -107,13 +109,25 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
             "ICCICN '26 Registration Confirmed",
             `<h1>Registration Successful</h1>
              <p>Dear ${members[0].name},</p>
-             <p>Your team <strong>${teamName}</strong> has been successfully registered.</p>
-             <p><strong>Login Credentials:</strong></p>
-             <ul>
-                <li>Email: ${leadEmail}</li>
-                <li>Access Code: <strong>${teamId}</strong></li>
-             </ul>
-             <p>Please keep this code safe. You will need it to check your status.</p>`
+             <p>Your team <strong>${teamName}</strong> has been successfully registered for ICCICN '26.</p>
+             
+             <div class="highlight-box">
+                <strong>Team Details:</strong>
+                <ul>
+                    <li>Mode: <strong>${mode}</strong></li>
+                    <li>Domains: ${domains.join(', ')}</li>
+                </ul>
+             </div>
+
+             <div class="highlight-box">
+                <strong>Login Credentials:</strong>
+                <ul>
+                    <li>Email: ${leadEmail}</li>
+                    <li>Access Code: <strong>${teamId}</strong></li>
+                </ul>
+             </div>
+             <p>Please keep this code safe. You will need it to login and check your submission status.</p>`,
+            'success'
         );
 
         return {

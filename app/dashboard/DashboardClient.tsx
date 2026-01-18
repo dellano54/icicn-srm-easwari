@@ -30,7 +30,8 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
 
   let currentStepIndex = 0;
   if (['UNDER_REVIEW', 'AWAITING_DECISION'].includes(paper.status)) currentStepIndex = 1;
-  if (['ACCEPTED_UNPAID', 'PAYMENT_VERIFICATION', 'REGISTERED', 'REJECTED'].includes(paper.status)) currentStepIndex = 2;
+  // If decision is made (Accepted/Rejected) or beyond, mark all review steps as completed
+  if (['ACCEPTED_UNPAID', 'PAYMENT_VERIFICATION', 'REGISTERED', 'REJECTED'].includes(paper.status)) currentStepIndex = 3;
 
   const getStepStatus = (index: number) => {
     if (index < currentStepIndex) return 'completed';
@@ -160,7 +161,17 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                             <div className="flex-1 w-full">
                                 <form onSubmit={handlePaymentUpload} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Upload Payment Screenshot</label>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Payer / UPI Name <span className="text-blue-500">*</span></label>
+                                        <input 
+                                            type="text" 
+                                            name="payerName"
+                                            placeholder="Enter Account Holder Name"
+                                            required
+                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Upload Payment Screenshot <span className="text-blue-500">*</span></label>
                                         <input 
                                             type="file" 
                                             name="screenshot"

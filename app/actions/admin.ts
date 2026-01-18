@@ -31,7 +31,12 @@ export async function adminDecision(
             data: { status: 'REJECTED' }
         });
 
-        await sendEmail(paper.user.email, "ICCICN '26 - Paper Status Update", `<p>We regret to inform you that your paper has been rejected.</p>`);
+        await sendEmail(
+            paper.user.email, 
+            "ICCICN '26 - Paper Status Update", 
+            `<h1>Paper Rejected</h1><p>We regret to inform you that your paper has been rejected.</p>`, 
+            'danger'
+        );
     } else {
         await prisma.paper.update({
             where: { id: paperId },
@@ -41,7 +46,12 @@ export async function adminDecision(
             }
         });
 
-        await sendEmail(paper.user.email, "ICCICN '26 - Paper Accepted!", `<p>Congratulations! Your paper has been accepted. Please login to dashboard to proceed with payment.</p>`);
+        await sendEmail(
+            paper.user.email, 
+            "ICCICN '26 - Paper Accepted!", 
+            `<h1>Paper Accepted</h1><p>Congratulations! Your paper has been accepted. Please login to dashboard to proceed with payment.</p>`, 
+            'success'
+        );
     }
 
     revalidatePath('/admin/dashboard');
@@ -66,7 +76,12 @@ export async function verifyPayment(paperId: string, _formData: FormData) {
         }
     });
 
-    await sendEmail(paper.user.email, "ICCICN '26 - Registration Confirmed", `<p>Your payment has been verified. See you at the conference!</p>`);
+    await sendEmail(
+        paper.user.email, 
+        "ICCICN '26 - Registration Confirmed", 
+        `<h1>Payment Verified</h1><p>Your payment has been verified. See you at the conference!</p>`, 
+        'success'
+    );
 
     revalidatePath('/admin/dashboard');
     return { success: true };
