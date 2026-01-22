@@ -25,8 +25,6 @@ async function main() {
   // So deleting Reviewer deletes their Reviews.
   
   console.log('🧹 Cleaning up old reviewers...');
-  await prisma.review.deleteMany({});
-  await prisma.reviewer.deleteMany({});
   // We don't delete Papers/Users to preserve potential test data if users want, 
   // but if we want a full reset we would. For now, let's just reset reviewers/reviews as that's the focus.
   
@@ -56,7 +54,7 @@ async function main() {
                 name,
                 email,
                 password: 'password123',
-                domains: [domain] // Specialized in this domain
+                domains: domain // Specialized in this domain
             }
         });
     }

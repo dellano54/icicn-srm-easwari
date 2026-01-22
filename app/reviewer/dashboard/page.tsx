@@ -1,9 +1,10 @@
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { submitReview } from '@/app/actions/reviewer';
 import { ReviewLink } from '@/components/reviewer/ReviewLink';
-import { CheckCircle, Clock, Eye } from 'lucide-react';
+import { ReviewForm } from '@/components/reviewer/ReviewForm';
+import { CheckCircle, Clock, Eye, LogOut } from 'lucide-react';
+import { logout } from '@/app/actions/auth';
 
 export default async function ReviewerDashboard() {
   const session = await getSession();
@@ -39,8 +40,16 @@ export default async function ReviewerDashboard() {
                 <h1 className="text-3xl font-bold text-slate-800">Reviewer Portal</h1>
                 <p className="text-slate-500">Welcome, {reviewer.name}</p>
             </div>
-            <div className="text-sm bg-white px-4 py-2 rounded-lg border border-slate-200 text-slate-600 shadow-sm">
-                Assigned: <span className="font-bold text-blue-600">{reviewer.reviews.length}</span>
+            <div className="flex items-center gap-4">
+                <div className="text-sm bg-white px-4 py-2 rounded-lg border border-slate-200 text-slate-600 shadow-sm">
+                    Assigned: <span className="font-bold text-blue-600">{reviewer.reviews.length}</span>
+                </div>
+                <form action={logout}>
+                    <button type="submit" className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors shadow-sm">
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -59,20 +68,20 @@ export default async function ReviewerDashboard() {
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{review.paper.user.teamName}</h3>
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {review.paper.domains.map((d, i) => (
+                                        {review.paper.domains.split(',').map((d, i) => (
                                             <span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded text-xs font-medium">{d}</span>
                                         ))}
                                     </div>
                                 </div>
                                 <div className="flex gap-3">
                                     <ReviewLink 
-                                        url={review.paper.paperUrl} 
+                                        url={review.paper.cameraReadyPaperUrl ? `/api/file/paper/${review.paper.id}` : ''} 
                                         reviewId={review.id}
                                         label="View Paper PDF" 
                                         className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
                                     />
                                     <ReviewLink 
-                                        url={review.paper.plagiarismUrl} 
+                                        url={review.paper.plagiarismReportUrl ? `/api/file/plagiarism/${review.paper.id}` : ''} 
                                         reviewId={review.id}
                                         label="Plagiarism Report" 
                                         className="bg-white text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors"
@@ -97,55 +106,7 @@ export default async function ReviewerDashboard() {
                             </div>
                             
                             <div className="p-6">
-                                {/* Consensus Status */}
-                                <div className="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Review Consensus</h4>
-                                    <div className="flex gap-6 text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
-                                            <span className="font-medium text-slate-700">Accepts: {review.paper.reviews.filter((r: any) => r.decision === 'ACCEPT').length}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                                            <span className="font-medium text-slate-700">Rejects: {review.paper.reviews.filter((r: any) => r.decision === 'REJECT').length}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <form action={async (formData) => {
-                                    'use server';
-                                    await submitReview(review.id, formData);
-                                }}>
-                                    <div className="mb-6">
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Detailed Review Points</label>
-                                        <textarea 
-                                            name="feedback" 
-                                            required 
-                                            placeholder="Please provide specific feedback on technical quality, originality, and clarity..."
-                                            className="w-full p-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[150px] resize-y"
-                                        ></textarea>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                        <div>
-                                            <label className="block text-sm font-bold text-slate-700 mb-2">Decision</label>
-                                            <select name="decision" className="w-full p-3 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer">
-                                                <option value="ACCEPT">Accept Paper</option>
-                                                <option value="REJECT">Reject Paper</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-bold text-slate-700 mb-2">Recommended Tier (if Accepted)</label>
-                                            <select name="tier" className="w-full p-3 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer">
-                                                <option value="TIER_1">Tier 1 (High Quality / Journal)</option>
-                                                <option value="TIER_2">Tier 2 (Conference)</option>
-                                                <option value="TIER_3">Tier 3 (Poster)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-600 hover:shadow-blue-500/20 transition-all">
-                                        Submit Final Review
-                                    </button>
-                                </form>
+                                <ReviewForm reviewId={review.id} />
                             </div>
                         </div>
                     ))}

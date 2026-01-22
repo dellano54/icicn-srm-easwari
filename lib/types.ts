@@ -26,8 +26,6 @@ export interface Member {
 
 export interface FormData {
   teamName: string;
-  mentorName: string;
-  mentorDept: string;
   paperFile: File | null;
   plagiarismFile: File | null;
   domains: string[];

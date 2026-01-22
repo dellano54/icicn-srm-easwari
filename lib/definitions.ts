@@ -14,22 +14,16 @@ export const MemberSchema = z.object({
 
 export const RegistrationSchema = z.object({
     teamName: z.string().min(3, "Team name is required"),
-    mentorName: z.string().min(3, "Mentor name is required"),
-    mentorDept: z.string().min(2, "Mentor department is required"),
-    domains: z.array(z.string()).min(1, "Select at least one domain"),
-    members: z.array(MemberSchema).min(1).max(4),
-    mode: z.enum(['ONLINE', 'OFFLINE']),
+    domains: z.array(z.string()).min(1, "Select at least one domain").max(1, "Select only one domain"),
+    members: z.array(MemberSchema).min(1).max(7),
 });
 
 export type RegistrationFormState = {
     errors?: {
         teamName?: string[];
-        mentorName?: string[];
-        mentorDept?: string[];
         domains?: string[];
         paper?: string[];
         plagiarism?: string[];
-        mode?: string[];
         _form?: string[];
     };
     message?: string;

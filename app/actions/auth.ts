@@ -2,7 +2,6 @@
 
 import { prisma } from '@/lib/prisma';
 import { createSession, deleteSession } from '@/lib/session';
-import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { AuthFormState } from '@/lib/definitions';
@@ -32,7 +31,7 @@ export async function loginTeam(prevState: AuthFormState, formData: FormData): P
         }
 
         // Check password (hashed Team ID)
-        const isValid = await bcrypt.compare(teamId, user.password);
+        const isValid = teamId === user.password;
 
         if (!isValid) {
             return { message: 'Invalid credentials.' };
@@ -40,7 +39,7 @@ export async function loginTeam(prevState: AuthFormState, formData: FormData): P
 
         // Create Session
         await createSession(user.id, 'user');
-    } catch (error) {
+    } catch {
         return { message: 'Database error.' };
     }
     
@@ -67,7 +66,8 @@ export async function loginSystem(prevState: AuthFormState, formData: FormData):
             redirect('/reviewer/dashboard');
         }
     } catch (error) {
-        if ((error as any).message === 'NEXT_REDIRECT') throw error;
+        console.error('System login error:', error);
+        if (error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
         return { message: 'Auth failed' };
     }
 }

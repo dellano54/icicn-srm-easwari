@@ -14,28 +14,28 @@ const getVariantStyles = (variant: EmailVariant) => {
     switch (variant) {
         case 'success':
             return {
-                gradient: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-                subtextColor: '#d1fae5',
-                btnColor: '#059669'
+                headerGradient: 'linear-gradient(135deg, #065f46 0%, #059669 100%)', // Emerald 800 to 600
+                icon: '✅',
+                accentColor: '#059669'
             };
         case 'danger':
             return {
-                gradient: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
-                subtextColor: '#fee2e2',
-                btnColor: '#dc2626'
+                headerGradient: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)', // Red 800 to 600
+                icon: '⚠️',
+                accentColor: '#dc2626'
             };
         case 'warning':
             return {
-                gradient: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
-                subtextColor: '#fef3c7',
-                btnColor: '#d97706'
+                headerGradient: 'linear-gradient(135deg, #92400e 0%, #d97706 100%)', // Amber 800 to 600
+                icon: '🔔',
+                accentColor: '#d97706'
             };
         case 'default':
         default:
             return {
-                gradient: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
-                subtextColor: '#94a3b8',
-                btnColor: '#2563eb'
+                headerGradient: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)', // Slate 800 to Blue 500
+                icon: '📬',
+                accentColor: '#2563eb'
             };
     }
 };
@@ -45,44 +45,152 @@ const getHtmlTemplate = (title: string, bodyContent: string, variant: EmailVaria
 
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
       <style>
-        body { font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .header { background: ${styles.gradient}; padding: 40px 30px; text-align: center; color: white; }
-        .header h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff; }
-        .header p { margin: 8px 0 0; color: ${styles.subtextColor}; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; }
-        .content { padding: 40px 30px; color: #334155; line-height: 1.7; font-size: 16px; }
-        .content h2 { color: #0f172a; font-weight: 700; font-size: 20px; margin-top: 0; }
-        .footer { background: #f8fafc; padding: 30px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }
-        .footer a { color: #3b82f6; text-decoration: none; }
-        .highlight-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 25px 0; }
-        .highlight-box strong { display: block; margin-bottom: 10px; color: #0f172a; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .highlight-box ul { margin: 0; padding-left: 20px; color: #475569; }
-        .highlight-box li { margin-bottom: 5px; }
-        .btn { display: inline-block; background: ${styles.btnColor}; color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 25px; text-align: center; }
-        .btn:hover { opacity: 0.9; }
-        .tag { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: bold; background: #e2e8f0; color: #475569; margin-left: 5px; vertical-align: middle; }
+        body { 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f8fafc; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-font-smoothing: antialiased;
+            color: #334155;
+        }
+        .wrapper {
+            width: 100%;
+            background-color: #f8fafc;
+            padding: 40px 0;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: #ffffff; 
+            border-radius: 24px; 
+            overflow: hidden; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+        .header { 
+            background: ${styles.headerGradient}; 
+            padding: 48px 40px; 
+            text-align: center; 
+            position: relative;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .logo-text {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin: 0;
+            line-height: 1;
+        }
+        .logo-sub {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 12px;
+        }
+        .content { 
+            padding: 48px 40px; 
+            font-size: 16px; 
+            line-height: 1.8;
+            color: #475569;
+        }
+        .content h1, .content h2, .content h3 { 
+            color: #0f172a; 
+            font-weight: 700; 
+            margin-top: 0;
+            letter-spacing: -0.02em;
+        }
+        .content h2 { font-size: 24px; margin-bottom: 16px; }
+        .content p { margin-bottom: 24px; }
+        
+        /* Highlight Box */
+        .highlight-box { 
+            background: #f1f5f9; 
+            border-left: 4px solid ${styles.accentColor};
+            border-radius: 8px; 
+            padding: 24px; 
+            margin: 32px 0; 
+        }
+        .highlight-box strong { 
+            display: block; 
+            color: #0f172a; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            margin-bottom: 8px;
+        }
+        .highlight-box ul { margin: 0; padding-left: 20px; }
+        .highlight-box li { margin-bottom: 8px; }
+
+        /* Button */
+        .btn { 
+            display: inline-block; 
+            background: ${styles.accentColor}; 
+            color: #ffffff !important; 
+            padding: 16px 32px; 
+            border-radius: 99px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            margin-top: 16px; 
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        .footer { 
+            background: #f8fafc; 
+            padding: 40px; 
+            text-align: center; 
+            font-size: 13px; 
+            color: #94a3b8; 
+            border-top: 1px solid #e2e8f0; 
+        }
+        .footer p { margin: 4px 0; }
+        .footer a { color: #64748b; text-decoration: none; font-weight: 500; }
+        .footer a:hover { color: ${styles.accentColor}; }
+        
+        /* Utilities */
+        .text-sm { font-size: 14px; }
+        .text-center { text-align: center; }
+        .mb-0 { margin-bottom: 0; }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <h1>ICCICN '26</h1>
-          <p>International Conference on Computational Intelligence</p>
-        </div>
-        <div class="content">
-          ${bodyContent}
-        </div>
-        <div class="footer">
-          <p>&copy; 2026 ICCICN. All rights reserved.</p>
-          <p>Easwari Engineering College, Chennai, India.</p>
-          <p><a href="#">Contact Support</a> | <a href="#">Website</a></p>
-        </div>
+      <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <h1 class="logo-text">ICCICN '26</h1>
+              <p class="logo-sub">International Conference on Computational Intelligence</p>
+            </div>
+            <div class="content">
+              ${bodyContent}
+            </div>
+            <div class="footer">
+              <p>&copy; 2026 ICCICN. All rights reserved.</p>
+              <p>Easwari Engineering College, Chennai, India.</p>
+              <div style="margin-top: 16px;">
+                <a href="#">Help Center</a> &bull; <a href="#">Privacy Policy</a> &bull; <a href="#">Unsubscribe</a>
+              </div>
+            </div>
+          </div>
       </div>
     </body>
     </html>
@@ -91,11 +199,12 @@ const getHtmlTemplate = (title: string, bodyContent: string, variant: EmailVaria
 
 export const sendEmail = async (to: string, subject: string, htmlBody: string, variant: EmailVariant = 'default') => {
   try {
-    // Wrap the body in the standard template
     // Extract title from h1 if present, or use subject
     const titleMatch = htmlBody.match(/<h1[^>]*>(.*?)<\/h1>/i);
     const title = titleMatch ? titleMatch[1] : subject;
+    
     // Remove the h1 from body if we extracted it, to avoid duplication in template
+    // Also replacing generic H2s with the styled ones
     const cleanBody = htmlBody.replace(/<h1[^>]*>.*?<\/h1>/i, `<h2>${title}</h2>`);
 
     const finalHtml = getHtmlTemplate(title, cleanBody, variant);

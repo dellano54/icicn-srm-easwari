@@ -4,14 +4,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Member, CollegeSuggestion, LocationSuggestion } from '@/lib/types';
 import { apiService } from '@/lib/api';
 import { InputField } from '@/components/ui/InputField';
-import { Copy, Trash2, Search } from 'lucide-react';
+import { Copy, Search } from 'lucide-react';
 
 interface MemberCardProps {
   member: Member;
   index: number;
-  totalMembers: number;
   onUpdate: (id: string, field: keyof Member, value: string) => void;
-  onRemove: (id: string) => void;
   onCopyFromLead: (id: string) => void;
   isLead: boolean;
 }
@@ -19,9 +17,7 @@ interface MemberCardProps {
 export const MemberCard: React.FC<MemberCardProps> = ({
   member,
   index,
-  totalMembers,
   onUpdate,
-  onRemove,
   onCopyFromLead,
   isLead
 }) => {
@@ -159,16 +155,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               >
                 <Copy className="w-3 h-3 mr-1.5 transition-transform group-hover/btn:-rotate-180" />
                 <span className="inline">Copy from Lead</span>
-              </button>
-            )}
-            {totalMembers > 1 && (
-              <button
-                type="button"
-                onClick={() => onRemove(member.id)}
-                className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors active:scale-95"
-                title="Remove Member"
-              >
-                <Trash2 className="w-5 h-5" />
               </button>
             )}
           </div>

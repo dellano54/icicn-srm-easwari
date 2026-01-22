@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
+import { LoadingProvider } from "@/contexts/LoadingContext";
+
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
@@ -27,8 +29,10 @@ export default function RootLayout({
           jakarta.className
         )}
       >
-        <div className="fixed inset-0 bg-gradient-to-b from-white/80 via-white/50 to-slate-50/80 pointer-events-none -z-10" />
-        {children}
+        <LoadingProvider>
+          <div className="fixed inset-0 bg-gradient-to-b from-white/80 via-white/50 to-slate-50/80 pointer-events-none -z-10" />
+          {children}
+        </LoadingProvider>
       </body>
     </html>
   );

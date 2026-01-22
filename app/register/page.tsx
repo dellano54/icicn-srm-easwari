@@ -10,21 +10,19 @@ import { FileUpload } from '@/components/ui/FileUpload';
 import { DomainSelector } from '@/components/ui/DomainSelector';
 import { MemberCard } from '@/components/register/MemberCard';
 import { registerTeam } from '@/app/actions/register';
-import { ArrowLeft, Plus, CheckCircle, Copy, Loader2, ArrowRight, Monitor, MapPin } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Copy, Loader2, ArrowRight } from 'lucide-react';
 
 import { RegistrationFormState } from '@/lib/definitions';
 
 export default function RegisterPage() {
   const [state, dispatch, isPending] = useActionState<RegistrationFormState, FormData>(registerTeam, { message: '', errors: {} });
+  const [step, setStep] = useState(1);
   
   const [formData, setFormData] = useState<LocalFormData>({
     teamName: '',
-    mentorName: '',
-    mentorDept: '',
     paperFile: null,
     plagiarismFile: null,
     domains: [],
-    mode: 'ONLINE',
     members: [{ 
       id: uuidv4(), 
       name: '', 
@@ -49,32 +47,29 @@ export default function RegisterPage() {
     setFormData(prev => ({ ...prev, domains }));
   };
 
-  const addMember = () => {
-    if (formData.members.length < MAX_MEMBERS) {
-      setFormData(prev => ({
-        ...prev,
-        members: [...prev.members, { 
-          id: uuidv4(), 
-          name: '', 
-          email: '', 
-          phone: '', 
-          college: '',
-          department: '',
-          city: '',
-          state: '',
-          country: '' 
-        }]
-      }));
-    }
-  };
-
-  const removeMember = (id: string) => {
-    if (formData.members.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        members: prev.members.filter(m => m.id !== id)
-      }));
-    }
+  const handleTeamSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(e.target.value, 10);
+    setFormData(prev => {
+        const currentMembers = prev.members;
+        if (newSize > currentMembers.length) {
+            const newMembers = Array.from({ length: newSize - currentMembers.length }, () => ({
+                id: uuidv4(),
+                name: '',
+                email: '',
+                phone: '',
+                college: '',
+                department: '',
+                city: '',
+                state: '',
+                country: '',
+            }));
+            return { ...prev, members: [...currentMembers, ...newMembers] };
+        }
+        if (newSize < currentMembers.length) {
+            return { ...prev, members: currentMembers.slice(0, newSize) };
+        }
+        return prev;
+    });
   };
 
   const updateMember = (id: string, field: keyof Member, value: string) => {
@@ -102,26 +97,33 @@ export default function RegisterPage() {
     }));
   };
 
+  const nextStep = () => {
+    // Basic Step 1 Validation
+    if (!formData.teamName || formData.domains.length === 0 || !formData.paperFile || !formData.plagiarismFile) {
+        alert("Please complete all fields in Step 1 including file uploads.");
+        return;
+    }
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const prevStep = () => {
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Manual validation check before submitting to server
-    if (formData.domains.length === 0) {
-        alert("Please select at least one domain.");
-        return;
-    }
-    if (!formData.paperFile || !formData.plagiarismFile) {
-        alert("Please upload both the Paper and the Plagiarism Report.");
+    // Final validation
+    if (formData.members.some(m => !m.name || !m.email || !m.phone || !m.college)) {
+        alert("Please complete all member details.");
         return;
     }
 
     const payload = new FormData();
     payload.append('teamName', formData.teamName);
-    payload.append('mentorName', formData.mentorName);
-    payload.append('mentorDept', formData.mentorDept);
-    payload.append('mode', formData.mode);
     payload.append('domains', JSON.stringify(formData.domains));
-    // We send members as a JSON string for easier parsing on server
     payload.append('members', JSON.stringify(formData.members));
     
     if (formData.paperFile) payload.append('paperFile', formData.paperFile);
@@ -228,24 +230,23 @@ export default function RegisterPage() {
                 <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center mr-2 shadow-sm group-hover:border-blue-200 group-hover:bg-blue-50 transition-all">
                     <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
                 </div>
-                Back
+                Back to Home
             </Link>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-                <Link
-                    href="/login"
-                    className="flex-1 sm:flex-none text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg transition-colors text-center"
-                >
-                    Login
-                </Link>
+            
+            {/* Step Indicator */}
+            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+                <div className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${step === 2 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-2">Step {step} of 2</span>
             </div>
         </div>
 
         <div className="max-w-4xl mx-auto mb-10 text-center px-2">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-3">
-             Team Registration
+             {step === 1 ? 'Team Registration' : 'Add Team Members'}
           </h2>
           <p className="text-slate-500 text-base md:text-lg">
-            Submit your research paper and team details. <br className="hidden md:block" />
+            {step === 1 ? 'Submit your research paper and team details.' : 'Provide details for all participating members.'}
           </p>
         </div>
         
@@ -255,129 +256,105 @@ export default function RegisterPage() {
             </div>
         )}
 
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-10 animate-fade-in">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto animate-fade-in">
           
-          {/* Section 1: Team & Project Info */}
-          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-            <div className="bg-slate-50/50 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">Team & Project</h2>
-                <p className="text-sm text-slate-500 mt-1">General submission details</p>
-              </div>
-              <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-400">
-                 {/* Icon */}
-              </div>
-            </div>
-            
-            <div className="p-8 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="md:col-span-2">
-                      <InputField
-                          label="Team Name"
-                          name="teamName"
-                          value={formData.teamName}
-                          onChange={handleInputChange}
-                          placeholder="Enter your team name"
-                          required
-                          className="text-lg"
-                          error={state.errors?.teamName}
-                      />
-                  </div>
-                  
-                  {/* MODE SELECTOR */}
-                  <div className="md:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Participation Mode <span className="text-blue-500 ml-1">*</span></label>
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, mode: 'ONLINE' }))}
-                            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${formData.mode === 'ONLINE' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-white hover:border-blue-300'}`}
-                        >
-                            <Monitor className="w-6 h-6 mb-2" />
-                            <span className="font-bold text-sm">Online</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, mode: 'OFFLINE' }))}
-                            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${formData.mode === 'OFFLINE' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-white hover:border-blue-300'}`}
-                        >
-                            <MapPin className="w-6 h-6 mb-2" />
-                            <span className="font-bold text-sm">Offline (In-Person)</span>
-                        </button>
+          {/* Step 1: Team Registration */}
+          {step === 1 && (
+          <div className="space-y-10 animate-fade-in">
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div className="bg-slate-50/50 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-800">Step 1: Team Registration</h2>
+                    <p className="text-sm text-slate-500 mt-1">General submission details</p>
+                </div>
+                </div>
+                
+                <div className="p-8 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="md:col-span-2">
+                        <InputField
+                            label="Team Name"
+                            name="teamName"
+                            value={formData.teamName}
+                            onChange={handleInputChange}
+                            placeholder="Enter your team name"
+                            required
+                            className="text-lg"
+                            error={state.errors?.teamName}
+                        />
                     </div>
-                  </div>
+                    
+                    <div className="md:col-span-2">
+                        <DomainSelector 
+                        selectedDomains={formData.domains}
+                        onChange={handleDomainsChange}
+                        error={state.errors?.domains}
+                        />
+                    </div>
+                </div>
 
-                  <div className="md:col-span-2">
-                    <DomainSelector 
-                      selectedDomains={formData.domains}
-                      onChange={handleDomainsChange}
-                      error={state.errors?.domains}
-                    />
-                  </div>
+                <div className="border-t border-slate-100 pt-8">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Submission Documents</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FileUpload
+                            label="Conference Paper"
+                            accept=".pdf"
+                            required
+                            onChange={(file) => setFormData(prev => ({ ...prev, paperFile: file }))}
+                            value={formData.paperFile}
+                            helperText="Upload your research paper (PDF)"
+                            error={state.errors?.paper}
+                        />
+                        <FileUpload
+                            label="Plagiarism Report"
+                            accept=".pdf"
+                            required
+                            onChange={(file) => setFormData(prev => ({ ...prev, plagiarismFile: file }))}
+                            value={formData.plagiarismFile}
+                            helperText="Attach the plagiarism scan report (Only Turnitin - PDF)"
+                            error={state.errors?.plagiarism}
+                        />
+                    </div>
+                </div>
+                </div>
+            </div>
 
-                  <InputField
-                      label="Mentor Name"
-                      name="mentorName"
-                      value={formData.mentorName}
-                      onChange={handleInputChange}
-                      placeholder="Faculty Mentor Name"
-                      required
-                      error={state.errors?.mentorName}
-                  />
-                  <InputField
-                      label="Mentor Department"
-                      name="mentorDept"
-                      value={formData.mentorDept}
-                      onChange={handleInputChange}
-                      placeholder="Mentor's Department"
-                      required
-                      error={state.errors?.mentorDept}
-                  />
-              </div>
-
-              <div className="border-t border-slate-100 pt-8">
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Submission Documents</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <FileUpload
-                          label="Conference Paper"
-                          accept=".pdf"
-                          required
-                          onChange={(file) => setFormData(prev => ({ ...prev, paperFile: file }))}
-                          value={formData.paperFile}
-                          helperText="Upload your research paper (PDF)"
-                          error={state.errors?.paper}
-                      />
-                      <FileUpload
-                          label="Plagiarism Report"
-                          accept=".pdf"
-                          required
-                          onChange={(file) => setFormData(prev => ({ ...prev, plagiarismFile: file }))}
-                          value={formData.plagiarismFile}
-                          helperText="Attach the plagiarism scan report (PDF)"
-                          error={state.errors?.plagiarism}
-                      />
-                  </div>
-              </div>
+            <div className="pt-4 flex justify-end">
+                <button
+                    type="button"
+                    onClick={nextStep}
+                    className="w-full sm:w-auto relative group overflow-hidden bg-slate-900 text-white font-bold py-4 px-10 rounded-2xl shadow-xl transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
+                >
+                    <span className="relative z-10 flex items-center justify-center text-lg">
+                        Continue to Members
+                        <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                    </span>
+                </button>
             </div>
           </div>
+          )}
 
-          {/* Section 2: Members */}
-          <div className="space-y-6">
+          {/* Step 2: Members */}
+          {step === 2 && (
+          <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">Members</h2>
+                <h2 className="text-2xl font-bold text-slate-800">Step 2: Members</h2>
                 <p className="text-slate-500 mt-1 text-sm">Manage your team details (Max {MAX_MEMBERS})</p>
               </div>
-              {formData.members.length < MAX_MEMBERS && (
-                <button
-                  type="button"
-                  onClick={addMember}
-                  className="w-full sm:w-auto group inline-flex items-center justify-center px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:border-blue-500 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md active:scale-95"
+              <div className="flex items-center gap-4">
+                <label htmlFor="team-size-select" className="text-lg font-semibold text-slate-600">Team Size:</label>
+                <select 
+                    id="team-size-select"
+                    value={formData.members.length}
+                    onChange={handleTeamSizeChange}
+                    className="px-4 py-3 bg-white border border-slate-300 rounded-lg text-lg font-semibold text-slate-700 focus:outline-none focus:border-blue-500"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Member
-                </button>
-              )}
+                    {[...Array(MAX_MEMBERS).keys()].map(i => (
+                        <option key={i + 1} value={i + 1}>{i + 1}</option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             <div className="space-y-6 md:space-y-8">
@@ -386,40 +363,47 @@ export default function RegisterPage() {
                   <MemberCard
                     member={member}
                     index={index}
-                    totalMembers={formData.members.length}
                     onUpdate={updateMember}
-                    onRemove={removeMember}
                     onCopyFromLead={copyLeadCollege}
                     isLead={index === 0}
                   />
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Submit Action */}
-          <div className="pt-8 pb-32 flex justify-end">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/40 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              <span className="relative z-10 flex items-center justify-center text-lg">
-                {isPending ? (
-                    <>
-                        <Loader2 className="animate-spin w-5 h-5 mr-2" />
-                        Processing...
-                    </>
-                ) : (
-                    <>
-                        Complete Registration
-                        <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-                    </>
-                )}
-              </span>
-              <div className="absolute top-0 left-0 w-full h-full bg-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            </button>
+            {/* Submit Action */}
+            <div className="pt-12 pb-32 flex flex-col sm:flex-row justify-between gap-4">
+                <button
+                    type="button"
+                    onClick={prevStep}
+                    className="order-2 sm:order-1 w-full sm:w-auto flex items-center justify-center px-8 py-4 bg-white border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all active:scale-95"
+                >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Back
+                </button>
+                <button
+                    type="submit"
+                    disabled={isPending || formData.members.length > MAX_MEMBERS}
+                    className="order-1 sm:order-2 w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/40 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    <span className="relative z-10 flex items-center justify-center text-lg">
+                        {isPending ? (
+                            <>
+                                <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                                Processing...
+                            </>
+                        ) : (
+                            <>
+                                Complete Registration
+                                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                            </>
+                        )}
+                    </span>
+                    <div className="absolute top-0 left-0 w-full h-full bg-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </button>
+            </div>
           </div>
+          )}
 
         </form>
     </div>

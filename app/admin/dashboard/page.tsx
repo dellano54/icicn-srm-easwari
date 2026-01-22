@@ -8,6 +8,7 @@ import { RejectedPapersTable } from '@/components/admin/RejectedPapersTable';
 import { TeamsTable } from '@/components/admin/TeamsTable';
 import { PaymentsTable } from '@/components/admin/PaymentsTable';
 import { AdminDashboardClient } from '@/components/admin/AdminDashboardClient';
+import { FEE_AMOUNT_INR, FEE_AMOUNT_USD } from '@/lib/constants';
 
 export default async function AdminDashboard() {
   const session = await getSession();
@@ -48,7 +49,20 @@ export default async function AdminDashboard() {
     orderBy: { updatedAt: 'desc' }
   });
 
-  // 3. Stats
+  // 3. Stats & Revenue
+  const revenue = confirmedPayments.reduce(
+    (acc, paper) => {
+      const isForeign = paper.user.country.toLowerCase() !== 'india';
+      if (isForeign) {
+        acc.usd += FEE_AMOUNT_USD;
+      } else {
+        acc.inr += FEE_AMOUNT_INR;
+      }
+      return acc;
+    },
+    { inr: 0, usd: 0 }
+  );
+
   const stats = {
     total: allTeams.length,
     accepted: acceptedPapers.length,
@@ -61,7 +75,7 @@ export default async function AdminDashboard() {
   const allPapers = await prisma.paper.findMany({ select: { domains: true } });
   const domainCounts: Record<string, number> = {};
   allPapers.forEach(p => {
-    p.domains.forEach(d => {
+    p.domains.split(',').forEach(d => {
         domainCounts[d] = (domainCounts[d] || 0) + 1;
     });
   });
@@ -74,8 +88,8 @@ export default async function AdminDashboard() {
 
   // --- View Construction ---
   const OverviewView = (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="lg:col-span-2 xl:col-span-3 space-y-8">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div>
@@ -159,6 +173,7 @@ export default async function AdminDashboard() {
         acceptedCount={stats.accepted}
         rejectedCount={stats.rejected}
         totalCount={stats.total}
+        revenue={revenue}
     >
         {{
             overview: OverviewView,

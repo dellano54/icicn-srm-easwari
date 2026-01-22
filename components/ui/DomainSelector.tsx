@@ -16,10 +16,11 @@ export const DomainSelector: React.FC<DomainSelectorProps> = ({
   error
 }) => {
   const toggleDomain = (domain: string) => {
+    // Single selection logic: if already selected, deselect; otherwise, select ONLY this one.
     if (selectedDomains.includes(domain)) {
-      onChange(selectedDomains.filter(d => d !== domain));
+      onChange([]);
     } else {
-      onChange([...selectedDomains, domain]);
+      onChange([domain]);
     }
   };
 
@@ -29,11 +30,11 @@ export const DomainSelector: React.FC<DomainSelectorProps> = ({
     <div className="w-full">
       <div className="flex justify-between items-end mb-3">
         <label className="block text-sm font-semibold text-slate-700">
-          Project Domains (Select all that apply)
+          Project Domain (Select one)
           <span className="text-blue-500 ml-1">*</span>
         </label>
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">
-            {selectedDomains.length} Selected
+            {selectedDomains.length ? "1 Selected" : "None Selected"}
         </span>
       </div>
       

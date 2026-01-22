@@ -30,12 +30,10 @@ export async function GET() {
 
   // 1. Teams Sheet (Matches "Teams" Tab)
   const teamsData = users.map(user => ({
-    'Team ID': user.password, // Visible ID
+    'Team ID': user.id, // Visible ID
     'Team Name': user.teamName,
     'Lead Name': user.members.find(m => m.isLead)?.name || 'N/A',
     'Lead Email': user.email,
-    'Mentor': user.mentorName,
-    'Department': user.mentorDept,
     'Country': user.country,
     'Mode': user.mode,
     'Members Count': user.members.length,
@@ -57,9 +55,9 @@ export async function GET() {
   const acceptedData = papers
     .filter(p => ['ACCEPTED_UNPAID', 'REGISTERED'].includes(p.status))
     .map(p => ({
-      'Paper ID': p.id.split('-').pop(),
+      'Team ID': p.userId,
       'Team Name': p.user.teamName,
-      'Domains': p.domains.join(', '),
+      'Domains': p.domains.replace(/,/g, ', '),
       'Tier': p.adminTier || 'N/A',
       'Payment Status': p.status === 'REGISTERED' ? 'Paid' : 'Unpaid'
     }));
@@ -68,9 +66,9 @@ export async function GET() {
   const rejectedData = papers
     .filter(p => p.status === 'REJECTED')
     .map(p => ({
-      'Paper ID': p.id.split('-').pop(),
+      'Team ID': p.userId,
       'Team Name': p.user.teamName,
-      'Domains': p.domains.join(', '),
+      'Domains': p.domains.replace(/,/g, ', '),
       'Rejection Date': formatDate(p.updatedAt)
     }));
 
@@ -81,9 +79,9 @@ export async function GET() {
         const acceptCount = p.reviews.filter(r => r.decision === 'ACCEPT').length;
         const rejectCount = p.reviews.filter(r => r.decision === 'REJECT').length;
         return {
-            'Paper ID': p.id.split('-').pop(),
+            'Team ID': p.userId,
             'Team Name': p.user.teamName,
-            'Domains': p.domains.join(', '),
+            'Domains': p.domains.replace(/,/g, ', '),
             'Accepts': acceptCount,
             'Rejects': rejectCount,
             'Submission Date': formatDate(p.createdAt)

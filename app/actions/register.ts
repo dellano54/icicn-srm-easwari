@@ -5,15 +5,12 @@ import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 import { assignReviewers } from '@/lib/logic';
 import { sendEmail } from '@/lib/email';
-import bcrypt from 'bcryptjs';
 
 export async function registerTeam(prevState: RegistrationFormState, formData: FormData): Promise<RegistrationFormState> {
     
     // 1. Extract and Parse Data
     const rawData = {
         teamName: formData.get('teamName') as string,
-        mentorName: formData.get('mentorName') as string,
-        mentorDept: formData.get('mentorDept') as string,
         domains: JSON.parse(formData.get('domains') as string || '[]'),
         members: JSON.parse(formData.get('members') as string || '[]'),
         mode: formData.get('mode') as 'ONLINE' | 'OFFLINE',
@@ -29,7 +26,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         };
     }
 
-    const { teamName, mentorName, mentorDept, domains, members, mode } = validatedFields.data;
+    const { teamName, domains, members, mode } = validatedFields.data;
 
     // 3. Validate Files
     const paperFile = formData.get('paperFile') as File;
@@ -49,45 +46,49 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
     });
 
     if (existingUser) {
-        return { message: 'A team with this lead email is already registered.' };
+        return { message: 'This email has already been used to register.' };
     }
 
     try {
-        // 5. Generate Credentials
+        // 5. Generate Sequential Credentials
         const currentYear = new Date().getFullYear();
-        const randomCode = Math.floor(1000 + Math.random() * 9000);
-        const teamId = `TEAM-${currentYear}-${randomCode}`; // This will be the "password" they see
+        const userCount = await prisma.user.count();
+        const nextId = (userCount + 1).toString().padStart(4, '0');
+        const teamId = `TEAM-${currentYear}-${nextId}`; // This will be the "password" they see
         
-        // Hash the code for storage
-        const hashedPassword = await bcrypt.hash(teamId, 10);
-
         // 6. Upload Files (Parallel)
         const [paperBlob, plagiarismBlob] = await Promise.all([
-            put(`papers/${teamId}_paper.pdf`, paperFile, { access: 'public' }),
-            put(`plagiarism/${teamId}_report.pdf`, plagiarismFile, { access: 'public' })
+            put(`papers/${teamId}.pdf`, paperFile, { access: 'public', allowOverwrite: true }),
+            put(`plagiarism/${teamId}.pdf`, plagiarismFile, { access: 'public', allowOverwrite: true })
         ]);
 
         // 7. Database Transaction
         const newUser = await prisma.user.create({
             data: {
+                id: teamId,
                 teamName,
                 email: leadEmail,
-                password: hashedPassword, // Storing hashed ID
-                mentorName,
-                mentorDept,
+                password: teamId, // Storing plain ID as requested
                 country: members[0].country, // Defaulting to lead's country
                 mode: mode,
                 members: {
                     create: members.map((m, index) => ({
-                        ...m,
+                        name: m.name,
+                        email: m.email,
+                        phone: m.phone,
+                        college: m.college,
+                        department: m.department,
+                        city: m.city,
+                        state: m.state,
+                        country: m.country,
                         isLead: index === 0
                     }))
                 },
                 paper: {
                     create: {
-                        paperUrl: paperBlob.url,
-                        plagiarismUrl: plagiarismBlob.url,
-                        domains: domains,
+                        cameraReadyPaperUrl: paperBlob.url,
+                        plagiarismReportUrl: plagiarismBlob.url,
+                        domains: domains.join(','),
                         status: 'SUBMITTED'
                     }
                 }
@@ -98,37 +99,45 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         });
 
         // 8. Assign Reviewers (Background Task - non-blocking for response)
-        // We await it here for simplicity, or we could fire-and-forget
+        // Fire-and-forget to speed up response
         if (newUser.paper) {
-            await assignReviewers(newUser.paper.id, domains);
+            assignReviewers(newUser.paper.id, domains).catch(err => console.error("Background Review Assignment Error:", err));
         }
 
-        // 9. Send Confirmation Email
-        await sendEmail(
+        // 9. Send Confirmation Email (Background Task)
+        // Fire-and-forget (optimistic) to prevent blocking the UI
+        sendEmail(
             leadEmail,
             "ICCICN '26 Registration Confirmed",
             `<h1>Registration Successful</h1>
              <p>Dear ${members[0].name},</p>
-             <p>Your team <strong>${teamName}</strong> has been successfully registered for ICCICN '26.</p>
+             <p>Congratulations! Your team <strong>${teamName}</strong> has been successfully registered for ICCICN '26.</p>
              
              <div class="highlight-box">
-                <strong>Team Details:</strong>
+                <strong>Submission Overview:</strong>
                 <ul>
+                    <li>Paper ID: <strong>${teamId}</strong></li>
                     <li>Mode: <strong>${mode}</strong></li>
-                    <li>Domains: ${domains.join(', ')}</li>
+                    <li>Tracks: ${domains.join(', ')}</li>
                 </ul>
              </div>
 
              <div class="highlight-box">
                 <strong>Login Credentials:</strong>
+                <p>Use these credentials to access your dashboard and track your paper's progress:</p>
                 <ul>
-                    <li>Email: ${leadEmail}</li>
-                    <li>Access Code: <strong>${teamId}</strong></li>
+                    <li>Email: <strong>${leadEmail}</strong></li>
+                    <li>Access Code: <span style="font-family: monospace; font-size: 18px; letter-spacing: 1px; color: #2563eb;"><strong>${teamId}</strong></span></li>
                 </ul>
              </div>
-             <p>Please keep this code safe. You will need it to login and check your submission status.</p>`,
+
+             <div style="text-align: center; margin-top: 32px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" class="btn">Login to Dashboard</a>
+             </div>
+             
+             <p style="margin-top: 32px; font-size: 14px; color: #64748b;">Please keep your Access Code safe. Our reviewers will now begin evaluating your submission. You will receive an update via email once a decision is made.</p>`,
             'success'
-        );
+        ).catch(err => console.error("Background Email Error:", err));
 
         return {
             success: true,
@@ -139,6 +148,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
 
     } catch (error) {
         console.error('Registration error:', error);
-        return { message: 'Database error: Failed to register team.' };
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { message: `Database error: ${errorMessage}` };
     }
 }

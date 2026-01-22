@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle, Loader2 } from 'lucide-react';
+import { UploadCloud, FileText, Loader2 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 
 interface FileUploadProps {

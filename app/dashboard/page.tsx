@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    include: { paper: true }
+    include: { paper: true, members: true }
   });
 
   if (!user || !user.paper) {

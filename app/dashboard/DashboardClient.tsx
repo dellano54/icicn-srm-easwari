@@ -1,21 +1,25 @@
 "use client";
 
 import React, { useState } from 'react';
-import { User, Paper, PaperStatus } from '@prisma/client';
+import Image from 'next/image';
+import { User, Paper, Member } from '@prisma/client';
 import { logout } from '@/app/actions/auth';
 import { uploadPaymentScreenshot } from '@/app/actions/payment';
+import { uploadFinalFiles } from '@/app/actions/final-upload';
 import { FEE_AMOUNT_INR, FEE_AMOUNT_USD } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
-import { Check, Clock, Upload, X, LogOut, Loader2, QrCode } from 'lucide-react';
+import { Check, Clock, Upload, X, LogOut, Loader2, QrCode, Users, Monitor, MapPin } from 'lucide-react';
 
 interface DashboardClientProps {
-  user: User;
+  user: User & { members: Member[] };
   paper: Paper;
 }
 
 export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [finalUploadState, setFinalUploadState] = useState<{ loading: boolean, error: string, success: boolean }>({ loading: false, error: '', success: false });
+  const [finalMode, setFinalMode] = useState<'ONLINE' | 'OFFLINE' | null>(user.mode);
 
   const isForeign = user.country.toLowerCase() !== 'india';
   const feeAmount = isForeign ? FEE_AMOUNT_USD : FEE_AMOUNT_INR;
@@ -51,6 +55,28 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
         setUploadError(result.message);
     }
     setIsUploading(false);
+  };
+
+  const handleFinalUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFinalUploadState({ loading: true, error: '', success: false });
+
+    if (!finalMode) {
+      setFinalUploadState({ loading: false, error: 'Please select a participation mode (Online or Offline).', success: false });
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    formData.set('paperId', paper.id);
+    formData.set('mode', finalMode);
+    
+    const result = await uploadFinalFiles(formData);
+
+    if (result.message) {
+      setFinalUploadState({ loading: false, error: result.message, success: false });
+    } else if (result.success) {
+      setFinalUploadState({ loading: false, error: '', success: true });
+    }
   };
 
   return (
@@ -155,8 +181,14 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                             Scan to Pay ({feeSymbol}{feeAmount})
                         </h4>
                         <div className="flex flex-col md:flex-row gap-6 items-center">
-                            <div className="w-40 h-40 bg-slate-200 rounded-lg flex items-center justify-center shrink-0">
-                                <span className="text-xs text-slate-500 font-mono">QR CODE PLACEHOLDER</span>
+                            <div className="w-40 h-40 bg-white rounded-lg flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
+                                <Image 
+                                    src="/payment_QR.jpg" 
+                                    alt="Scan to Pay" 
+                                    width={160} 
+                                    height={160} 
+                                    className="object-contain"
+                                />
                             </div>
                             <div className="flex-1 w-full">
                                 <form onSubmit={handlePaymentUpload} className="space-y-4">
@@ -210,15 +242,131 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
 
             {/* REGISTERED */}
             {paper.status === 'REGISTERED' && (
-                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-center text-white shadow-xl scale-reveal active animate-bounce-in">
-                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm mx-auto mb-4">
-                        <Check className="w-10 h-10 text-white" />
+              <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8">
+                
+                {/* Missing Payment Proof Handler */}
+                {!paper.paymentScreenshotUrl && (
+                    <div className="mb-8 p-6 bg-amber-50 border border-amber-200 rounded-2xl">
+                        <h4 className="font-bold text-amber-800 mb-2 flex items-center">
+                            <Clock className="w-5 h-5 mr-2" />
+                            Payment Proof Missing
+                        </h4>
+                        <p className="text-sm text-amber-700 mb-4">
+                            Your registration is confirmed, but the payment screenshot seems to be missing. Please re-upload it for our records.
+                        </p>
+                        <form onSubmit={handlePaymentUpload} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Payer / UPI Name <span className="text-blue-500">*</span></label>
+                                <input 
+                                    type="text" 
+                                    name="payerName"
+                                    placeholder="Enter Account Holder Name"
+                                    required
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Upload Payment Screenshot <span className="text-blue-500">*</span></label>
+                                <input 
+                                    type="file" 
+                                    name="screenshot"
+                                    accept="image/*"
+                                    required
+                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                />
+                            </div>
+                            <button 
+                                type="submit" 
+                                disabled={isUploading}
+                                className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center"
+                            >
+                                {isUploading ? <Loader2 className="animate-spin w-4 h-4" /> : "Re-upload Payment Proof"}
+                            </button>
+                            {uploadError && <p className="text-red-500 text-xs">{uploadError}</p>}
+                        </form>
                     </div>
-                    <h3 className="text-3xl font-extrabold mb-2">Registration Confirmed</h3>
-                    <p className="text-emerald-50 max-w-md mx-auto">
-                        We look forward to seeing you at ICCICN '26! Your presentation slot details will be emailed shortly.
-                    </p>
-                </div>
+                )}
+
+                { !paper.isFinalSubmitted ? (
+                  <>
+                    <div className="text-center mb-8">
+                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center backdrop-blur-sm mx-auto mb-4">
+                            <Check className="w-10 h-10 text-emerald-600" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-800 mb-2">Registration Confirmed!</h3>
+                        <p className="text-slate-500 max-w-md mx-auto">
+                            Please complete the final step by uploading your camera-ready paper and plagiarism report.
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleFinalUpload} className="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Camera-Ready Paper <span className="text-blue-500 text-xs">(PDF only)</span></label>
+                        <input type="file" name="cameraReadyPaper" accept="application/pdf" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Plagiarism Report <span className="text-blue-500 text-xs">(Only Turnitin - PDF)</span></label>
+                        <input type="file" name="plagiarismReport" accept="application/pdf" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Participation Mode</label>
+                        <div className="flex gap-4 rounded-lg border border-slate-200 p-1 bg-white">
+                            <button type="button" onClick={() => setFinalMode('ONLINE')} className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 ${finalMode === 'ONLINE' ? 'bg-blue-500 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}>
+                                <Monitor className="w-4 h-4" /> Online
+                            </button>
+                            <button type="button" onClick={() => setFinalMode('OFFLINE')} className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 ${finalMode === 'OFFLINE' ? 'bg-blue-500 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}>
+                                <MapPin className="w-4 h-4" /> Offline
+                            </button>
+                        </div>
+                      </div>
+
+                      <button type="submit" disabled={finalUploadState.loading} className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center">
+                        {finalUploadState.loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Submit Final Files"}
+                      </button>
+
+                      {finalUploadState.error && <p className="text-red-500 text-sm font-medium text-center">{finalUploadState.error}</p>}
+                    </form>
+                  </>
+                ) : (
+                    <div className="text-center">
+                        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center backdrop-blur-sm mx-auto mb-4">
+                            <Check className="w-10 h-10 text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-800 mb-2">All Set!</h3>
+                        <p className="text-slate-500 max-w-md mx-auto">
+                            Your final files have been submitted successfully. We look forward to seeing you at the conference!
+                        </p>
+                    </div>
+                )}
+
+                {/* Payment Info (Visible once registered) */}
+                {paper.paymentScreenshotUrl && (
+                    <div className="mt-8 pt-8 border-t border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <QrCode className="w-4 h-4 text-blue-600" />
+                            Payment Information
+                        </h4>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Payer Name</p>
+                                    <p className="text-sm font-semibold text-slate-700">{paper.paymentSenderName}</p>
+                                </div>
+                                <a 
+                                    href={`/api/file/payment/${paper.id}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                                >
+                                    <Upload className="w-3 h-3" /> View Receipt
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                )}
+              </div>
             )}
 
         </div>
@@ -226,16 +374,33 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
         {/* Sidebar */}
         <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <h3 className="font-bold text-slate-800 mb-4">Team Members</h3>
+                <div className="space-y-3">
+                    {user.members.map(member => (
+                        <div key={member.id} className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <Users className="w-4 h-4 text-slate-500"/>
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-slate-700">{member.name} {member.isLead && <span className="text-xs text-amber-500">(Lead)</span>}</p>
+                                <p className="text-xs text-slate-500">{member.email}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                 <h3 className="font-bold text-slate-800 mb-4">Paper Details</h3>
                 <div className="space-y-4 text-sm">
                     <div>
                         <div className="text-slate-400 text-xs uppercase tracking-wider mb-1">Paper ID</div>
-                        <div className="font-mono bg-slate-100 px-2 py-1 rounded inline-block text-slate-600 text-xs">{paper.id.split('-').pop()}</div>
+                        <div className="font-mono bg-slate-100 px-2 py-1 rounded inline-block text-slate-600 text-xs">{paper.id}</div>
                     </div>
                     <div>
                         <div className="text-slate-400 text-xs uppercase tracking-wider mb-1">Tracks</div>
                         <div className="flex flex-wrap gap-1">
-                            {paper.domains.slice(0, 3).map((d, i) => (
+                            {paper.domains.split(',').slice(0, 3).map((d, i) => (
                                 <span key={i} className="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-[10px] font-bold">{d}</span>
                             ))}
                         </div>

@@ -19,6 +19,6 @@ export const DOMAINS = [
   "3D Printing"
 ];
 
-export const MAX_MEMBERS = 4;
-export const FEE_AMOUNT_INR = 8000;
-export const FEE_AMOUNT_USD = 150;
+export const MAX_MEMBERS = 7;
+export const FEE_AMOUNT_INR = 500;
+export const FEE_AMOUNT_USD = 50;

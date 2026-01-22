@@ -6,9 +6,9 @@ export async function assignReviewers(paperId: string, domainTags: string[]) {
     // Using prisma's array filtering features
     const eligibleReviewers = await prisma.reviewer.findMany({
       where: {
-        domains: {
-          hasSome: domainTags
-        }
+        OR: domainTags.map(tag => ({
+            domains: { contains: tag }
+        }))
       },
       select: { id: true }
     });
@@ -34,7 +34,6 @@ export async function assignReviewers(paperId: string, domainTags: string[]) {
 
     await prisma.review.createMany({
       data: reviewData,
-      skipDuplicates: true // Avoid error if somehow already assigned
     });
 
     // Update Paper status to UNDER_REVIEW

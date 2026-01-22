@@ -39,15 +39,26 @@ export async function uploadPaymentScreenshot(formData: FormData) {
     // Let's send a confirmation to the user.
     const user = await prisma.user.findUnique({ where: { id: session.userId } });
     if (user) {
-        await sendEmail(
+        // Fire-and-forget email
+        sendEmail(
             user.email,
-            "Payment Proof Received",
-            `<h1>Payment Uploaded</h1>
-             <p>Hello ${user.teamName},</p>
-             <p>We have received your payment proof uploaded by <strong>${payerName}</strong>.</p>
-             <p>Our team will verify the transaction and confirm your registration shortly.</p>`,
+            "Payment Proof Received - ICCICN '26",
+            `<h1>Payment Received</h1>
+             <p>Hello Team <strong>${user.teamName}</strong>,</p>
+             <p>This is to confirm that we have successfully received your payment proof uploaded by <strong>${payerName}</strong>.</p>
+             
+             <div class="highlight-box">
+                <strong>Status: Verification in Progress</strong>
+                <p>Our finance team will verify the transaction details. This typically takes 24-48 hours.</p>
+             </div>
+
+             <p>Once verified, your registration status will be updated to "Confirmed" on your dashboard, and you will be able to upload the final camera-ready files.</p>
+             
+             <div style="text-align: center;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" class="btn">Check Status</a>
+             </div>`,
             'warning'
-        );
+        ).catch(err => console.error("Payment email failed:", err));
     }
 
     revalidatePath('/dashboard');

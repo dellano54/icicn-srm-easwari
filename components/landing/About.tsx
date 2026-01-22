@@ -10,7 +10,7 @@ export const About = () => {
                       Where <span className="text-blue-400">Innovation</span> Meets <span className="text-indigo-400">Reality</span>
                   </h2>
                   <p className="text-slate-300 text-lg leading-relaxed">
-                      Join us at <strong>Easwari Engineering College</strong> for a groundbreaking exploration of the future. ICCICN '26 brings together the brightest minds in AI, Networking, and Computational Intelligence.
+                      Join us at <strong>Easwari Engineering College</strong> for a groundbreaking exploration of the future. ICCICN &apos;26 brings together the brightest minds in AI, Networking, and Computational Intelligence.
                   </p>
                   <div className="grid grid-cols-2 gap-8 pt-4">
                       <div className="border-l-2 border-blue-500 pl-6">
