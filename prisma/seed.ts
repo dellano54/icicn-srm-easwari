@@ -1,10 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { DOMAINS } from '../lib/constants';
-
-const prisma = new PrismaClient();
 
 // Helper to create a slug from domain string
 function toSlug(text: string) {
@@ -25,6 +23,7 @@ async function main() {
   // So deleting Reviewer deletes their Reviews.
   
   console.log('🧹 Cleaning up old reviewers...');
+  await prisma.reviewer.deleteMany({});
   // We don't delete Papers/Users to preserve potential test data if users want, 
   // but if we want a full reset we would. For now, let's just reset reviewers/reviews as that's the focus.
   
