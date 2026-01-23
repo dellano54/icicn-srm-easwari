@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Paper, User } from '@prisma/client';
 import { bulkVerifyPayment } from '@/app/actions/bulk';
-import { CheckSquare, Square, Check, ExternalLink, User as UserIcon, FileText, Info } from 'lucide-react';
+import { declinePayment } from '@/app/actions/payment';
+import { CheckSquare, Square, Check, ExternalLink, User as UserIcon, FileText, Info, X } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { useLoading } from '@/contexts/LoadingContext';
 
@@ -52,6 +53,15 @@ export const PaymentVerificationTable: React.FC<PaymentVerificationTableProps> =
         showLoader('Verifying payment...');
         
         await bulkVerifyPayment([id]);
+        router.refresh();
+        hideLoader();
+    };
+
+    const handleSingleDecline = async (id: string) => {
+        if (!confirm('Are you sure you want to decline this payment?')) return;
+        showLoader('Declining payment...');
+        
+        await declinePayment(id);
         router.refresh();
         hideLoader();
     };
@@ -146,6 +156,13 @@ export const PaymentVerificationTable: React.FC<PaymentVerificationTableProps> =
                                             title="View Details"
                                         >
                                             <Info className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleSingleDecline(paper.id)}
+                                            className="h-9 w-9 flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-md border border-red-100 hover:border-red-500"
+                                            title="Decline Payment"
+                                        >
+                                            <X className="w-4 h-4" />
                                         </button>
                                         <button 
                                             onClick={() => handleSingleVerify(paper.id)}

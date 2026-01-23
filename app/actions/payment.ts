@@ -68,3 +68,62 @@ export async function uploadPaymentScreenshot(formData: FormData) {
     return { message: 'Upload failed' };
   }
 }
+
+export async function declinePayment(paperId: string) {
+    const session = await getSession();
+    if (!session || session.role !== 'admin') {
+      return { message: 'Unauthorized' };
+    }
+  
+    try {
+      const paper = await prisma.paper.findUnique({
+          where: { id: paperId },
+          include: { user: true }
+      });
+
+      if (!paper) return { message: 'Paper not found' };
+  
+      await prisma.paper.update({
+        where: { id: paperId },
+        data: {
+          status: 'PAYMENT_DECLINED',
+          paymentScreenshotUrl: null, // Clear the invalid screenshot so they can re-upload? Or keep it for record? Keeping it might confuse logic if we check for existence. Let's clear it or keep it?
+          // If I clear it, `DashboardClient` logic for "Missing Payment Proof" might trigger if I revert to REGISTERED, but here status is PAYMENT_DECLINED.
+          // Let's NOT clear it immediately, or maybe we should to force a fresh state? 
+          // If I clear it, the user sees "Upload". If I don't, I need to make sure the UI allows re-upload even if url exists.
+          // Let's clear it so the logic is cleaner: "No valid payment proof exists".
+          // Actually, let's keep it in case they want to see what they uploaded, but the UI will ask for a NEW one.
+          // The previous code `uploadPaymentScreenshot` overwrites it anyway.
+        }
+      });
+  
+      // Send Email
+      if (paper.user) {
+          sendEmail(
+              paper.user.email,
+              "Action Required: Payment Verification Failed - ICCICN '26",
+              `<h1>Payment Verification Failed</h1>
+               <p>Hello Team <strong>${paper.user.teamName}</strong>,</p>
+               <p>We reviewed your payment proof for paper <strong>${paperId}</strong>, but unfortunately, we could not verify it.</p>
+               
+               <div class="highlight-box" style="border-color: #ef4444; background-color: #fef2f2;">
+                  <strong>Reason:</strong>
+                  <p>The screenshot was unclear, the transaction ID was missing, or the amount was incorrect.</p>
+               </div>
+  
+               <p>Please log in to your dashboard and upload a valid payment proof immediately to secure your registration.</p>
+               
+               <div style="text-align: center;">
+                  <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" class="btn">Retry Payment</a>
+               </div>`,
+              'danger'
+          ).catch(err => console.error("Payment decline email failed:", err));
+      }
+  
+      revalidatePath('/admin/dashboard');
+      return { success: true };
+    } catch (error) {
+      console.error('Payment decline error:', error);
+      return { message: 'Decline failed' };
+    }
+  }

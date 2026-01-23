@@ -35,7 +35,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
   let currentStepIndex = 0;
   if (['UNDER_REVIEW', 'AWAITING_DECISION'].includes(paper.status)) currentStepIndex = 1;
   // If decision is made (Accepted/Rejected) or beyond, mark all review steps as completed
-  if (['ACCEPTED_UNPAID', 'PAYMENT_VERIFICATION', 'REGISTERED', 'REJECTED'].includes(paper.status)) currentStepIndex = 3;
+  if (['ACCEPTED_UNPAID', 'PAYMENT_VERIFICATION', 'REGISTERED', 'REJECTED', 'PAYMENT_DECLINED'].includes(paper.status)) currentStepIndex = 3;
 
   const getStepStatus = (index: number) => {
     if (index < currentStepIndex) return 'completed';
@@ -218,6 +218,69 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                                         className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center"
                                     >
                                         {isUploading ? <Loader2 className="animate-spin w-4 h-4" /> : "Verify Payment"}
+                                    </button>
+                                    {uploadError && <p className="text-red-500 text-xs">{uploadError}</p>}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* PAYMENT DECLINED */}
+            {paper.status === 'PAYMENT_DECLINED' && (
+                <div className="bg-red-50 border border-red-200 rounded-3xl p-8 text-center text-slate-800 shadow-xl scale-reveal active animate-bounce-in">
+                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <X className="w-10 h-10 text-red-500" />
+                    </div>
+                    <h3 className="text-3xl font-extrabold mb-4 text-red-600">Payment Verification Failed</h3>
+                    <p className="text-red-700 text-lg leading-relaxed max-w-lg mx-auto mb-8">
+                        We could not verify your previous payment proof. Please check the transaction details and re-upload a clear screenshot.
+                    </p>
+
+                    <div className="bg-white rounded-xl p-6 text-slate-800 text-left border border-red-100 shadow-sm">
+                        <h4 className="font-bold text-lg mb-4 flex items-center">
+                            <QrCode className="w-5 h-5 mr-2 text-blue-600" />
+                            Retry Payment ({feeSymbol}{feeAmount})
+                        </h4>
+                        <div className="flex flex-col md:flex-row gap-6 items-center">
+                            <div className="w-40 h-40 bg-white rounded-lg flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
+                                <Image 
+                                    src="/payment_QR.jpg" 
+                                    alt="Scan to Pay" 
+                                    width={160} 
+                                    height={160} 
+                                    className="object-contain"
+                                />
+                            </div>
+                            <div className="flex-1 w-full">
+                                <form onSubmit={handlePaymentUpload} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Payer / UPI Name <span className="text-blue-500">*</span></label>
+                                        <input 
+                                            type="text" 
+                                            name="payerName"
+                                            placeholder="Enter Account Holder Name"
+                                            required
+                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Upload Payment Screenshot <span className="text-blue-500">*</span></label>
+                                        <input 
+                                            type="file" 
+                                            name="screenshot"
+                                            accept="image/*"
+                                            required
+                                            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        />
+                                    </div>
+                                    <button 
+                                        type="submit" 
+                                        disabled={isUploading}
+                                        className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center"
+                                    >
+                                        {isUploading ? <Loader2 className="animate-spin w-4 h-4" /> : "Re-submit Payment"}
                                     </button>
                                     {uploadError && <p className="text-red-500 text-xs">{uploadError}</p>}
                                 </form>
