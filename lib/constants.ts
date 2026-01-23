@@ -6,12 +6,10 @@ export const DOMAINS = [
   "Soft Computing Techniques",
   "Cloud and Grid Computing",
   "Knowledge-Based Systems",
-  "Ethical Hacking and Network Security",
-  "Cyber Security",
+  "Ethical Hacking, Network Security & Cyber Security",
   "Block Chain Technology",
   "Internet of Things",
-  "Smart Living Technology",
-  "Smart Sensor Networks",
+  "Smart Living Technology & Smart Sensor Networks",
   "Social Network Analysis",
   "Wireless and Mobile Communication",
   "Virtual and Augmented Reality",
@@ -20,5 +18,5 @@ export const DOMAINS = [
 ];
 
 export const MAX_MEMBERS = 7;
-export const FEE_AMOUNT_INR = 500;
+export const FEE_AMOUNT_INR = 600;
 export const FEE_AMOUNT_USD = 50;
