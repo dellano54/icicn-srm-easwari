@@ -12,8 +12,38 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ICCICN '26 Registration",
-  description: "International Conference on Computational Intelligence & Computer Networks",
+  metadataBase: new URL('https://iccicn26.com'),
+  title: {
+    default: "ICCICN '26 - International Conference",
+    template: "%s | ICCICN '26"
+  },
+  description: "Official registration portal for the International Conference on Computational Intelligence & Computer Networks (ICCICN '26) at Easwari Engineering College.",
+  keywords: ["ICCICN", "Conference", "Computer Networks", "Computational Intelligence", "Easwari Engineering College", "Research", "Technology", "Symposium"],
+  authors: [{ name: "Department of IT, Easwari Engineering College" }],
+  creator: "Easwari Engineering College",
+  publisher: "Easwari Engineering College",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: "ICCICN '26 - International Conference",
+    description: "Join us for the International Conference on Computational Intelligence & Computer Networks at Easwari Engineering College.",
+    url: 'https://iccicn26.com',
+    siteName: "ICCICN '26",
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "ICCICN '26 - International Conference",
+    description: "International Conference on Computational Intelligence & Computer Networks.",
+    creator: '@EaswariCollege', // Placeholder
+  },
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
