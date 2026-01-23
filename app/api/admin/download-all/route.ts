@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         };
 
         // Fetch all files concurrently
-        await Promise.all(papers.flatMap(paper => {
+        await Promise.all(papers.flatMap((paper: any) => {
             const tasks = [];
             if (paper.cameraReadyPaperUrl) {
                 tasks.push(addToZip(paper.cameraReadyPaperUrl, papersFolder, `${paper.userId}.pdf`));

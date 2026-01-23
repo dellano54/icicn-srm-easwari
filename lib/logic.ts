@@ -27,7 +27,7 @@ export async function assignReviewers(paperId: string, domainTags: string[]) {
     if (selectedReviewers.length === 0) return;
 
     // 3. Create Review records
-    const reviewData = selectedReviewers.map(reviewer => ({
+    const reviewData = selectedReviewers.map((reviewer: any) => ({
       paperId: paperId,
       reviewerId: reviewer.id,
     }));

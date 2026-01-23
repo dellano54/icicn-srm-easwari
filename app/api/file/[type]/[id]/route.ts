@@ -28,7 +28,7 @@ export async function GET(
     if (paper.userId === session.userId) isAuthorized = true;
   } else if (session.role === 'reviewer') {
     // Check if assigned
-    const assignment = paper.reviews.some(r => r.reviewerId === session.userId);
+    const assignment = paper.reviews.some((r: any) => r.reviewerId === session.userId);
     if (assignment && (type === 'paper' || type === 'plagiarism')) {
         isAuthorized = true;
     }

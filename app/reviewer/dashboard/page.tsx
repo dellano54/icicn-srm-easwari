@@ -28,8 +28,8 @@ export default async function ReviewerDashboard() {
 
   if (!reviewer) redirect('/login');
 
-  const pendingReviews = reviewer.reviews.filter(r => !r.isCompleted);
-  const completedReviews = reviewer.reviews.filter(r => r.isCompleted);
+  const pendingReviews = reviewer.reviews.filter((r: any) => !r.isCompleted);
+  const completedReviews = reviewer.reviews.filter((r: any) => r.isCompleted);
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-8">
@@ -62,13 +62,13 @@ export default async function ReviewerDashboard() {
                 </h2>
                 
                 <div className="grid grid-cols-1 gap-6">
-                    {pendingReviews.map(review => (
+                    {pendingReviews.map((review: any) => (
                         <div key={review.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between md:items-center gap-4">
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{review.paper.user.teamName}</h3>
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {review.paper.domains.split(',').map((d, i) => (
+                                        {review.paper.domains.split(',').map((d: any, i: any) => (
                                             <span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded text-xs font-medium">{d}</span>
                                         ))}
                                     </div>
@@ -125,7 +125,7 @@ export default async function ReviewerDashboard() {
                     Completed History ({completedReviews.length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-75 grayscale hover:grayscale-0 transition-all">
-                    {completedReviews.map(review => (
+                    {completedReviews.map((review: any) => (
                         <div key={review.id} className="bg-white p-6 rounded-xl border border-slate-200">
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-bold text-slate-700">{review.paper.user.teamName}</h3>

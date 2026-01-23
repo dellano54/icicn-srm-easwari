@@ -24,7 +24,7 @@ export async function bulkAdminDecision(
             });
 
             // 1. Delete files (Blocking to ensure cleanup)
-            await Promise.all(papers.flatMap(paper => [
+            await Promise.all(papers.flatMap((paper: any) => [
                 paper.cameraReadyPaperUrl ? del(paper.cameraReadyPaperUrl) : Promise.resolve(),
                 paper.plagiarismReportUrl ? del(paper.plagiarismReportUrl) : Promise.resolve(),
             ]));
@@ -36,7 +36,7 @@ export async function bulkAdminDecision(
             });
 
             // 3. Send Emails (Fire-and-forget)
-            papers.forEach(paper => {
+            papers.forEach((paper: any) => {
                 sendEmail(
                     paper.user.email, 
                     "ICCICN '26 - Paper Status Update", 
@@ -55,17 +55,17 @@ export async function bulkAdminDecision(
                 include: { user: true, reviews: true }
             });
 
-            await Promise.all(papers.map(async (paper) => {
+            await Promise.all(papers.map(async (paper: any) => {
                 let assignedTier = tier;
 
                 // Auto-calculate Tier if not explicitly provided
                 if (!assignedTier) {
                     const validTiers = paper.reviews
-                        .filter(r => r.decision === 'ACCEPT' && r.tier)
-                        .map(r => parseInt(r.tier!.replace('TIER_', '')));
+                        .filter((r: any) => r.decision === 'ACCEPT' && r.tier)
+                        .map((r: any) => parseInt(r.tier!.replace('TIER_', '')));
                     
                     if (validTiers.length > 0) {
-                        const sum = validTiers.reduce((a, b) => a + b, 0);
+                        const sum = validTiers.reduce((a: number, b: number) => a + b, 0);
                         const avg = sum / validTiers.length;
                         // Conservative Rounding: 1.5 -> 2 (TIER_2)
                         const rounded = Math.round(avg);

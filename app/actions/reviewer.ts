@@ -25,8 +25,8 @@ export async function submitReview(reviewId: string, formData: FormData) {
 
     // Logic: If 2 reviewers have ACCEPTED or REJECTED the paper, move to AWAITING_DECISION
     // This allows Admin to see the paper and make a final decision based on the consensus.
-    const acceptedReviews = review.paper.reviews.filter(r => r.decision === 'ACCEPT').length;
-    const rejectedReviews = review.paper.reviews.filter(r => r.decision === 'REJECT').length;
+    const acceptedReviews = review.paper.reviews.filter((r: any) => r.decision === 'ACCEPT').length;
+    const rejectedReviews = review.paper.reviews.filter((r: any) => r.decision === 'REJECT').length;
     
     if ((acceptedReviews >= 2 || rejectedReviews >= 2) && review.paper.status === 'UNDER_REVIEW') {
         await prisma.paper.update({

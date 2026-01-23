@@ -56,7 +56,7 @@ export default async function AdminDashboard() {
 
   // 3. Stats & Revenue
   const revenue = confirmedPayments.reduce(
-    (acc, paper) => {
+    (acc: any, paper: any) => {
       const isForeign = paper.user.country.toLowerCase() !== 'india';
       if (isForeign) {
         acc.usd += FEE_AMOUNT_USD;
@@ -79,8 +79,8 @@ export default async function AdminDashboard() {
   // Reviewer Stats (for overview if needed, keeping it minimal for now or reusing logic)
   const allPapers = await prisma.paper.findMany({ select: { domains: true } });
   const domainCounts: Record<string, number> = {};
-  allPapers.forEach(p => {
-    p.domains.split(',').forEach(d => {
+  allPapers.forEach((p: any) => {
+    p.domains.split(',').forEach((d: any) => {
         domainCounts[d] = (domainCounts[d] || 0) + 1;
     });
   });
@@ -140,9 +140,9 @@ export default async function AdminDashboard() {
              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <h3 className="font-bold text-slate-800 mb-4">Reviewer Stats</h3>
                 <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                    {reviewers.map(reviewer => {
+                    {reviewers.map((reviewer: any) => {
                         const total = reviewer.reviews.length;
-                        const completed = reviewer.reviews.filter(r => r.isCompleted).length;
+                        const completed = reviewer.reviews.filter((r: any) => r.isCompleted).length;
                         const pending = total - completed;
                         
                         return (

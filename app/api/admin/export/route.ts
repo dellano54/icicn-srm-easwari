@@ -29,10 +29,10 @@ export async function GET() {
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
   // 1. Teams Sheet (Matches "Teams" Tab)
-  const teamsData = users.map(user => ({
+  const teamsData = users.map((user: any) => ({
     'Team ID': user.id, // Visible ID
     'Team Name': user.teamName,
-    'Lead Name': user.members.find(m => m.isLead)?.name || 'N/A',
+    'Lead Name': user.members.find((m: any) => m.isLead)?.name || 'N/A',
     'Lead Email': user.email,
     'Country': user.country,
     'Mode': user.mode,
@@ -42,8 +42,8 @@ export async function GET() {
 
   // 2. Payments History Sheet (Matches "History" Tab - Verified Payments)
   const paymentsData = papers
-    .filter(p => p.status === 'REGISTERED')
-    .map(p => ({
+    .filter((p: any) => p.status === 'REGISTERED')
+    .map((p: any) => ({
       'Team Name': p.user.teamName,
       'Payer Name': p.paymentSenderName || 'N/A',
       'Transaction Date': formatDate(p.updatedAt),
@@ -53,8 +53,8 @@ export async function GET() {
 
   // 3. Accepted Papers Sheet (Matches "Accepted" Tab)
   const acceptedData = papers
-    .filter(p => ['ACCEPTED_UNPAID', 'REGISTERED'].includes(p.status))
-    .map(p => ({
+    .filter((p: any) => ['ACCEPTED_UNPAID', 'REGISTERED'].includes(p.status))
+    .map((p: any) => ({
       'Team ID': p.userId,
       'Team Name': p.user.teamName,
       'Domains': p.domains.replace(/,/g, ', '),
@@ -64,8 +64,8 @@ export async function GET() {
 
   // 4. Rejected Papers Sheet (Matches "Rejected" Tab)
   const rejectedData = papers
-    .filter(p => p.status === 'REJECTED')
-    .map(p => ({
+    .filter((p: any) => p.status === 'REJECTED')
+    .map((p: any) => ({
       'Team ID': p.userId,
       'Team Name': p.user.teamName,
       'Domains': p.domains.replace(/,/g, ', '),
@@ -74,10 +74,10 @@ export async function GET() {
 
   // 5. Pending Decisions Sheet (Matches "Overview > Pending")
   const pendingDecisionsData = papers
-    .filter(p => p.status === 'AWAITING_DECISION')
-    .map(p => {
-        const acceptCount = p.reviews.filter(r => r.decision === 'ACCEPT').length;
-        const rejectCount = p.reviews.filter(r => r.decision === 'REJECT').length;
+    .filter((p: any) => p.status === 'AWAITING_DECISION')
+    .map((p: any) => {
+        const acceptCount = p.reviews.filter((r: any) => r.decision === 'ACCEPT').length;
+        const rejectCount = p.reviews.filter((r: any) => r.decision === 'REJECT').length;
         return {
             'Team ID': p.userId,
             'Team Name': p.user.teamName,
@@ -90,8 +90,8 @@ export async function GET() {
 
   // 6. Pending Payments Sheet (Matches "Overview > Payment Verification")
   const pendingPaymentsData = papers
-    .filter(p => p.status === 'PAYMENT_VERIFICATION')
-    .map(p => ({
+    .filter((p: any) => p.status === 'PAYMENT_VERIFICATION')
+    .map((p: any) => ({
       'Team Name': p.user.teamName,
       'Payer Name': p.paymentSenderName || 'N/A',
       'Proof Uploaded': 'Yes',
@@ -99,8 +99,8 @@ export async function GET() {
     }));
 
   // 7. All Members Sheet (Extra Utility)
-  const membersData = users.flatMap(user => 
-    user.members.map(member => ({
+  const membersData = users.flatMap((user: any) => 
+    user.members.map((member: any) => ({
         'Team Name': user.teamName,
         'Name': member.name,
         'Role': member.isLead ? 'Lead' : 'Member',
