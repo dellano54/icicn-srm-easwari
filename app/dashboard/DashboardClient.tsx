@@ -19,7 +19,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [finalUploadState, setFinalUploadState] = useState<{ loading: boolean, error: string, success: boolean }>({ loading: false, error: '', success: false });
-  const [finalMode, setFinalMode] = useState<'ONLINE' | 'OFFLINE' | null>(user.mode);
+  const [finalMode, setFinalMode] = useState<'ONLINE' | 'OFFLINE' | null>(user.mode as 'ONLINE' | 'OFFLINE' | null);
 
   const isForeign = user.country.toLowerCase() !== 'india';
   const feeAmount = isForeign ? FEE_AMOUNT_USD : FEE_AMOUNT_INR;

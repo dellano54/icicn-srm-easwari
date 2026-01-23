@@ -23,6 +23,7 @@ export default function RegisterPage() {
     paperFile: null,
     plagiarismFile: null,
     domains: [],
+    mode: 'ONLINE',
     members: [{ 
       id: uuidv4(), 
       name: '', 
@@ -125,6 +126,7 @@ export default function RegisterPage() {
     payload.append('teamName', formData.teamName);
     payload.append('domains', JSON.stringify(formData.domains));
     payload.append('members', JSON.stringify(formData.members));
+    payload.append('mode', formData.mode);
     
     if (formData.paperFile) payload.append('paperFile', formData.paperFile);
     if (formData.plagiarismFile) payload.append('plagiarismFile', formData.plagiarismFile);

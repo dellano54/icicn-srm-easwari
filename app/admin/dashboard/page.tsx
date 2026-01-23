@@ -17,7 +17,12 @@ export default async function AdminDashboard() {
   // 1. Fetch Papers
   const pendingPapers = await prisma.paper.findMany({
     where: { status: 'AWAITING_DECISION' },
-    include: { user: true, reviews: true }
+    include: { 
+        user: {
+            include: { members: true }
+        }, 
+        reviews: true 
+    }
   });
 
   const paymentPapers = await prisma.paper.findMany({
@@ -39,7 +44,7 @@ export default async function AdminDashboard() {
 
   // 2. Fetch Extra Data for New Views
   const allTeams = await prisma.user.findMany({
-    include: { paper: true, members: { select: { id: true } } }, // Optimizing select
+    include: { paper: true, members: true },
     orderBy: { createdAt: 'desc' }
   });
 

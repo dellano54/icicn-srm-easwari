@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
             return tasks;
         }));
 
-        const content = await zip.generateAsync({ type: "nodebuffer" });
+        const content = await zip.generateAsync({ type: "blob" });
 
         return new NextResponse(content, {
             status: 200,

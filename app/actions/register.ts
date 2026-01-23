@@ -13,7 +13,6 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         teamName: formData.get('teamName') as string,
         domains: JSON.parse(formData.get('domains') as string || '[]'),
         members: JSON.parse(formData.get('members') as string || '[]'),
-        mode: formData.get('mode') as 'ONLINE' | 'OFFLINE',
     };
 
     // 2. Validate Fields
@@ -26,7 +25,7 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
         };
     }
 
-    const { teamName, domains, members, mode } = validatedFields.data;
+    const { teamName, domains, members } = validatedFields.data;
 
     // 3. Validate Files
     const paperFile = formData.get('paperFile') as File;
@@ -70,7 +69,6 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
                 email: leadEmail,
                 password: teamId, // Storing plain ID as requested
                 country: members[0].country, // Defaulting to lead's country
-                mode: mode,
                 members: {
                     create: members.map((m, index) => ({
                         name: m.name,
@@ -117,7 +115,6 @@ export async function registerTeam(prevState: RegistrationFormState, formData: F
                 <strong>Submission Overview:</strong>
                 <ul>
                     <li>Paper ID: <strong>${teamId}</strong></li>
-                    <li>Mode: <strong>${mode}</strong></li>
                     <li>Tracks: ${domains.join(', ')}</li>
                 </ul>
              </div>
