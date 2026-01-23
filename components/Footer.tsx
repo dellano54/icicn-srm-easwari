@@ -19,14 +19,6 @@ export const Footer = () => {
           <p className="text-slate-400 text-sm leading-relaxed max-w-md">
             The International Conference on Computational Intelligence & Computer Networks brings together global experts to discuss the future of AI, networking, and sustainable computing.
           </p>
-          <div className="flex items-center space-x-4 pt-2">
-            <Link href="#" className="h-9 w-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all cursor-pointer">
-                <Twitter className="w-4 h-4" />
-            </Link>
-            <Link href="#" className="h-9 w-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all cursor-pointer">
-                <Linkedin className="w-4 h-4" />
-            </Link>
-          </div>
         </div>
 
         {/* Contact Column */}

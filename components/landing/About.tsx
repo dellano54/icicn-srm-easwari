@@ -1,6 +1,6 @@
 export const About = () => {
     return (
-      <section className="relative py-32 bg-slate-900 text-white clip-diagonal overflow-hidden">
+      <section className="relative py-20 md:py-32 bg-slate-900 text-white clip-diagonal overflow-hidden">
            {/* Background pattern */}
            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
            

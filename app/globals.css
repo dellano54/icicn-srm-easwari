@@ -15,6 +15,10 @@
   }
 }
 
+@utility animation-delay-2000 {
+  animation-delay: 2s;
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #1e293b;

@@ -18,7 +18,7 @@ export const Hero = () => {
             </span>
           </div>
           
-          <h1 className="reveal-text text-8xl md:text-[10rem] font-extrabold tracking-tighter text-slate-900 leading-[0.9]">
+          <h1 className="reveal-text text-5xl sm:text-8xl md:text-[10rem] font-extrabold tracking-tighter text-slate-900 leading-[0.9]">
             ICCICN <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">&apos;26</span>
           </h1>
           
