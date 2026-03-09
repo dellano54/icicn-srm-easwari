@@ -48,6 +48,7 @@ model Paper {
   plagiarismReportUrl  String?
   paymentScreenshotUrl String?
   paymentSenderName    String? // Name of payer (UPI/Bank)
+  paymentUploadedAt    DateTime?
   
   domains         String    // Comma-separated string
   

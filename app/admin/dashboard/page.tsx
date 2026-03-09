@@ -26,7 +26,10 @@ export default async function AdminDashboard() {
   });
 
   const paymentPapers = await prisma.paper.findMany({
-    where: { status: 'PAYMENT_VERIFICATION' },
+    where: { 
+        paymentScreenshotUrl: { not: null },
+        status: { not: 'REGISTERED' }
+    },
     include: { user: true },
     orderBy: { updatedAt: 'desc' }
   });
@@ -94,28 +97,28 @@ export default async function AdminDashboard() {
 
   // --- View Construction ---
   const OverviewView = (
-    <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <div className="lg:col-span-2 xl:col-span-3 space-y-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+    <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
+        <div className="lg:col-span-2 xl:col-span-3 space-y-4 md:space-y-8">
+            <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div>
-                        <h2 className="text-lg font-bold text-slate-800">Pending Decisions</h2>
-                        <p className="text-xs text-slate-500 mt-1">Papers with reviewer consensus</p>
+                        <h2 className="text-base md:text-lg font-bold text-slate-800">Pending Decisions</h2>
+                        <p className="hidden md:block text-xs text-slate-500 mt-1">Papers with reviewer consensus</p>
                     </div>
-                    <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                    <span className="bg-yellow-100 text-yellow-800 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full">
                         {pendingPapers.length} Pending
                     </span>
                 </div>
                 <PendingPapersTable papers={pendingPapers} />
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div>
-                        <h2 className="text-lg font-bold text-slate-800">Payment Verification</h2>
-                        <p className="text-xs text-slate-500 mt-1">Confirm payment screenshots</p>
+                        <h2 className="text-base md:text-lg font-bold text-slate-800">Payment Verification</h2>
+                        <p className="hidden md:block text-xs text-slate-500 mt-1">Confirm payment screenshots</p>
                     </div>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                    <span className="bg-blue-100 text-blue-800 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full">
                         {paymentPapers.length} Pending
                     </span>
                 </div>
@@ -123,24 +126,24 @@ export default async function AdminDashboard() {
             </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
              {/* Domain Distribution */}
-             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                <h3 className="font-bold text-slate-800 mb-4">Papers by Domain</h3>
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+             <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-slate-100 p-4 md:p-6">
+                <h3 className="font-bold text-slate-800 mb-4 text-sm md:text-base">Papers by Domain</h3>
+                <div className="space-y-3 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                     {sortedDomains.map(([domain, count]) => (
-                        <div key={domain} className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600 truncate max-w-[200px]" title={domain}>{domain}</span>
-                            <span className="font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs">{count}</span>
+                        <div key={domain} className="flex justify-between items-center text-xs md:text-sm">
+                            <span className="text-slate-600 truncate max-w-[180px] md:max-w-[200px]" title={domain}>{domain}</span>
+                            <span className="font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] md:text-xs">{count}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
              {/* Reviewer Performance */}
-             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                <h3 className="font-bold text-slate-800 mb-4">Reviewer Stats</h3>
-                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+             <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-slate-100 p-4 md:p-6">
+                <h3 className="font-bold text-slate-800 mb-4 text-sm md:text-base">Reviewer Stats</h3>
+                <div className="space-y-4 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                     {reviewers.map((reviewer: any) => {
                         const total = reviewer.reviews.length;
                         const completed = reviewer.reviews.filter((r: any) => r.isCompleted).length;

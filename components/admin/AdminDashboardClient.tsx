@@ -77,49 +77,51 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     ] as const;
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8 font-sans">
-             <div className="w-full max-w-[1920px] mx-auto space-y-8">
+        <div className="min-h-screen bg-gray-50/50 p-3 md:p-6 lg:p-8 font-sans">
+             <div className="w-full max-w-[1920px] mx-auto space-y-4 md:space-y-8">
                 
                 {/* Header & Actions */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
-                        <p className="text-slate-500 text-sm">Conference Management System</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
+                        <p className="text-slate-500 text-xs md:text-sm">Conference Management System</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full lg:w-auto">
                         <button 
                             onClick={handleRefresh}
-                            className="h-10 w-10 flex items-center justify-center bg-white text-slate-500 rounded-lg border border-slate-200 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm active:scale-95"
+                            className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center bg-white text-slate-500 rounded-lg border border-slate-200 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm active:scale-95"
                             title="Refresh Data"
                         >
                             <RefreshCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                         </button>
                         <button 
                             onClick={() => window.location.href = '/api/admin/download-all'}
-                            className="h-10 px-4 flex items-center gap-2 bg-white text-slate-700 border border-slate-200 rounded-lg text-sm font-bold hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                            className="flex-1 lg:flex-none h-9 md:h-10 px-3 md:px-4 flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 rounded-lg text-[11px] md:text-sm font-bold hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                         >
-                            <FileArchive className="w-4 h-4" />
-                            Download ZIP
+                            <FileArchive className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Download ZIP</span>
+                            <span className="sm:hidden">ZIP</span>
                         </button>
                         <button 
                             onClick={() => window.location.href = '/api/admin/export'}
-                            className="h-10 px-4 flex items-center gap-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+                            className="flex-1 lg:flex-none h-9 md:h-10 px-3 md:px-4 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-lg text-[11px] md:text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 active:scale-95"
                         >
-                            <Download className="w-4 h-4" />
-                            Export CSV
+                            <Download className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Export CSV</span>
+                            <span className="sm:hidden">CSV</span>
                         </button>
                         <button 
                             onClick={() => logout()}
-                            className="h-10 px-4 flex items-center gap-2 bg-white text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-50 transition-all shadow-sm active:scale-95"
+                            className="h-9 md:h-10 px-3 md:px-4 flex items-center justify-center gap-2 bg-white text-red-600 border border-red-200 rounded-lg text-[11px] md:text-sm font-bold hover:bg-red-50 transition-all shadow-sm active:scale-95"
                         >
-                            <LogOut className="w-4 h-4" />
+                            <LogOut className="w-3.5 h-3.5" />
                             Logout
                         </button>
                     </div>
                 </div>
 
                 {/* Top Stats Row - Always Visible */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
                     <StatsCard 
                         title="Total Teams" 
                         value={totalCount} 
@@ -128,14 +130,14 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
                         bgClass="bg-blue-50" 
                     />
                     <StatsCard 
-                        title="Pending Review" 
+                        title="Pending" 
                         value={pendingCount} 
                         icon={Activity} 
                         colorClass="text-amber-500" 
                         bgClass="bg-amber-50" 
                     />
                     <StatsCard 
-                        title="Verify Payment" 
+                        title="Payments" 
                         value={paymentCount} 
                         icon={AlertCircle} 
                         colorClass="text-purple-500" 
@@ -155,18 +157,20 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
                         colorClass="text-red-500" 
                         bgClass="bg-red-50" 
                     />
-                    <StatsCard 
-                        title="Revenue" 
-                        value={`₹${revenue.inr.toLocaleString()} | $${revenue.usd.toLocaleString()}`} 
-                        icon={CreditCard} 
-                        colorClass="text-slate-700" 
-                        bgClass="bg-slate-100" 
-                    />
+                    <div className="col-span-2 sm:col-span-3 lg:col-span-1">
+                        <StatsCard 
+                            title="Revenue" 
+                            value={`₹${revenue.inr.toLocaleString()} | $${revenue.usd.toLocaleString()}`} 
+                            icon={CreditCard} 
+                            colorClass="text-slate-700" 
+                            bgClass="bg-slate-100" 
+                        />
+                    </div>
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="border-b border-slate-200">
-                    <div className="flex gap-6 overflow-x-auto pb-1">
+                <div className="border-b border-slate-200 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-4 md:gap-6 min-w-max pb-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;

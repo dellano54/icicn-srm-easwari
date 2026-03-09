@@ -54,7 +54,7 @@ export const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments }) => {
                                         </td>
                                         <td className="p-4">
                                             <div className="font-bold text-slate-800 text-lg">{paper.user.teamName}</div>
-                                            <div className="text-sm text-slate-400">{formatDate(paper.updatedAt)}</div>
+                                            <div className="text-sm text-slate-400">{formatDate(paper.paymentUploadedAt || paper.updatedAt)}</div>
                                         </td>
                                         <td className="p-4">
                                             {paper.paymentSenderName ? (
