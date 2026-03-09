@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Paper, User } from '@prisma/client';
 import { bulkVerifyPayment } from '@/app/actions/bulk';
 import { declinePayment } from '@/app/actions/payment';
-import { CheckSquare, Square, Check, ExternalLink, User as UserIcon, FileText, Info, X } from 'lucide-react';
+import { CheckSquare, Square, Check, ExternalLink, User as UserIcon, FileText, Info, X, Calendar } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { useLoading } from '@/contexts/LoadingContext';
+import { formatDate, formatDateTime } from '@/lib/utils';
 
 type PaperWithUser = Paper & {
     user: User;
@@ -115,6 +116,10 @@ export const PaymentVerificationTable: React.FC<PaymentVerificationTableProps> =
                                 </td>
                                 <td className="p-4">
                                     <span className="font-mono text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{paper.userId.split('-').pop()}</span>
+                                    <div className="text-[10px] text-slate-400 mt-2 flex items-center gap-1 font-bold italic">
+                                        <Calendar className="w-3 h-3" />
+                                        {formatDateTime(paper.updatedAt)}
+                                    </div>
                                 </td>
                                 <td className="p-4">
                                     <div className="font-bold text-slate-800 text-base group-hover:text-blue-700 transition-colors mb-1">{paper.user.teamName}</div>

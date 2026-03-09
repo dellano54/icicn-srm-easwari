@@ -27,7 +27,8 @@ export default async function AdminDashboard() {
 
   const paymentPapers = await prisma.paper.findMany({
     where: { status: 'PAYMENT_VERIFICATION' },
-    include: { user: true }
+    include: { user: true },
+    orderBy: { updatedAt: 'desc' }
   });
 
   const acceptedPapers = await prisma.paper.findMany({

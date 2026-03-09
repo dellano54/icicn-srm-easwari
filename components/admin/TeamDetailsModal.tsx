@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Paper, User, Member, Review } from '@prisma/client';
-import { X, ExternalLink, Loader2, User as UserIcon, MapPin, Globe, Award, FileText, CreditCard } from 'lucide-react';
+import { X, ExternalLink, Loader2, User as UserIcon, MapPin, Globe, Award, FileText, CreditCard, Calendar } from 'lucide-react';
 import { getTeamDetails } from '@/app/actions/admin';
+import { formatDate, formatDateTime } from '@/lib/utils';
 
 type TeamDetails = User & {
     paper: (Paper & { reviews: Review[] }) | null;
@@ -245,14 +246,27 @@ export const TeamDetailsModal: React.FC<TeamDetailsModalProps> = ({ teamId, onCl
                                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Payment Verification</h4>
                                                 
                                                 {/* Payer Name Box */}
-                                                <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wide">Payer Name</p>
-                                                        <p className="text-base font-bold text-slate-800">{team.paper?.paymentSenderName || 'Not Provided'}</p>
+                                                <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wide">Payer Name</p>
+                                                            <p className="text-base font-bold text-slate-800">{team.paper?.paymentSenderName || 'Not Provided'}</p>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded-lg text-blue-600">
+                                                            <UserIcon className="w-4 h-4" />
+                                                        </div>
                                                     </div>
-                                                    <div className="bg-white p-2 rounded-lg text-blue-600">
-                                                        <UserIcon className="w-4 h-4" />
-                                                    </div>
+                                                    {team.paper?.updatedAt && (
+                                                        <div className="pt-2 border-t border-blue-100 flex items-center justify-between">
+                                                            <div>
+                                                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wide">Submitted Date</p>
+                                                                <p className="text-sm font-bold text-slate-700">{formatDateTime(team.paper.updatedAt)}</p>
+                                                            </div>
+                                                            <div className="bg-white p-2 rounded-lg text-blue-400">
+                                                                <Calendar className="w-4 h-4" />
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {team.paper?.paymentScreenshotUrl ? (
