@@ -31,7 +31,7 @@ export async function uploadPaymentScreenshot(formData: FormData) {
       data: {
         paymentScreenshotUrl: blob.url,
         paymentSenderName: payerName,
-        paymentUploadedAt: blob.uploadedAt,
+        paymentUploadedAt: new Date(),
         status: 'PAYMENT_VERIFICATION'
       }
     });
