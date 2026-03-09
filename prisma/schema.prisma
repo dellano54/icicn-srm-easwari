@@ -48,7 +48,6 @@ model Paper {
   plagiarismReportUrl  String?
   paymentScreenshotUrl String?
   paymentSenderName    String? // Name of payer (UPI/Bank)
-  paymentSubmittedAt   DateTime? // Permanent record of when they first uploaded
   
   domains         String    // Comma-separated string
   
