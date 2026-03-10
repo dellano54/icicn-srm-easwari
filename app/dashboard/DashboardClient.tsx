@@ -8,7 +8,7 @@ import { uploadPaymentScreenshot } from '@/app/actions/payment';
 import { uploadFinalFiles } from '@/app/actions/final-upload';
 import { FEE_AMOUNT_INR, FEE_AMOUNT_USD } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
-import { Check, Clock, Upload, X, LogOut, Loader2, QrCode, Users, Monitor, MapPin } from 'lucide-react';
+import { Check, Clock, Upload, X, LogOut, Loader2, QrCode, Users, Monitor, MapPin, Info } from 'lucide-react';
 
 interface DashboardClientProps {
   user: User & { members: Member[] };
@@ -376,13 +376,37 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2">Participation Mode</label>
                         <div className="flex gap-4 rounded-lg border border-slate-200 p-1 bg-white">
-                            <button type="button" onClick={() => setFinalMode('ONLINE')} className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 ${finalMode === 'ONLINE' ? 'bg-blue-500 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}>
+                            <button 
+                                type="button" 
+                                onClick={() => setFinalMode('ONLINE')} 
+                                className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 ${finalMode === 'ONLINE' ? 'bg-blue-500 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                            >
                                 <Monitor className="w-4 h-4" /> Online
                             </button>
-                            <button type="button" onClick={() => setFinalMode('OFFLINE')} className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 ${finalMode === 'OFFLINE' ? 'bg-blue-500 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}>
-                                <MapPin className="w-4 h-4" /> Offline
-                            </button>
+                            {user.members.some(m => !m.college.toLowerCase().includes('easwari') && !m.college.toLowerCase().includes('eec')) ? (
+                                <button 
+                                    type="button" 
+                                    disabled
+                                    className="flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 text-slate-300 cursor-not-allowed bg-slate-50"
+                                    title="Offline presentation is only available for Easwari Engineering College students."
+                                >
+                                    <MapPin className="w-4 h-4" /> Offline (Locked)
+                                </button>
+                            ) : (
+                                <button 
+                                    type="button" 
+                                    onClick={() => setFinalMode('OFFLINE')} 
+                                    className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors flex items-center justify-center gap-2 ${finalMode === 'OFFLINE' ? 'bg-blue-500 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                                >
+                                    <MapPin className="w-4 h-4" /> Offline
+                                </button>
+                            )}
                         </div>
+                        {user.members.some(m => !m.college.toLowerCase().includes('easwari') && !m.college.toLowerCase().includes('eec')) && (
+                            <p className="text-[10px] text-amber-600 mt-2 font-medium flex items-center gap-1">
+                                <Info className="w-3 h-3" /> External participants are restricted to Online presentation.
+                            </p>
+                        )}
                       </div>
 
                       <button type="submit" disabled={finalUploadState.loading} className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center">
