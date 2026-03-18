@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { User, Paper, Member } from '@prisma/client';
 import { logout } from '@/app/actions/auth';
 import { uploadPaymentScreenshot } from '@/app/actions/payment';
@@ -16,6 +17,7 @@ interface DashboardClientProps {
 }
 
 export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper }) => {
+  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [finalUploadState, setFinalUploadState] = useState<{ loading: boolean, error: string, success: boolean }>({ loading: false, error: '', success: false });
@@ -34,7 +36,6 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
 
   let currentStepIndex = 0;
   if (['UNDER_REVIEW', 'AWAITING_DECISION'].includes(paper.status)) currentStepIndex = 1;
-  // If decision is made (Accepted/Rejected) or beyond, mark all review steps as completed
   if (['ACCEPTED_UNPAID', 'PAYMENT_VERIFICATION', 'REGISTERED', 'REJECTED', 'PAYMENT_DECLINED'].includes(paper.status)) currentStepIndex = 3;
 
   const getStepStatus = (index: number) => {
@@ -53,8 +54,12 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
 
     if (result.message) {
         setUploadError(result.message);
+        setIsUploading(false);
+    } else if (result.success) {
+        setIsUploading(false);
+        // Refresh after successful payment upload
+        setTimeout(() => router.refresh(), 500);
     }
-    setIsUploading(false);
   };
 
   const handleFinalUpload = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,16 +71,43 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
-    formData.set('paperId', paper.id);
-    formData.set('mode', finalMode);
-    
-    const result = await uploadFinalFiles(formData);
+    // ✅ FIX: Manually get file inputs to avoid form field name corruption
+    const formElements = e.currentTarget.elements as HTMLFormControlsCollection;
+    const cameraReadyInput = formElements.namedItem('cameraReadyPaper') as HTMLInputElement;
+    const plagiarismInput = formElements.namedItem('plagiarismReport') as HTMLInputElement;
 
-    if (result.message) {
-      setFinalUploadState({ loading: false, error: result.message, success: false });
-    } else if (result.success) {
-      setFinalUploadState({ loading: false, error: '', success: true });
+    if (!cameraReadyInput?.files?.[0] || !plagiarismInput?.files?.[0]) {
+      setFinalUploadState({ loading: false, error: 'Both files are required.', success: false });
+      return;
+    }
+
+    try {
+      // ✅ FIX: Build FormData manually with correct field names
+      // Using new FormData(form) was corrupting field names with prefixes like "1_"
+      const formData = new FormData();
+      formData.append('cameraReadyPaper', cameraReadyInput.files[0]);
+      formData.append('plagiarismReport', plagiarismInput.files[0]);
+      formData.append('paperId', paper.id);
+      formData.append('mode', finalMode);
+
+      const result = await uploadFinalFiles(formData);
+
+      if (result.message) {
+        setFinalUploadState({ loading: false, error: result.message, success: false });
+      } else if (result.success) {
+        setFinalUploadState({ loading: false, error: '', success: true });
+        // Refresh after successful upload
+        setTimeout(() => {
+          router.refresh();
+        }, 1000);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      setFinalUploadState({ 
+        loading: false, 
+        error: 'An unexpected error occurred. Please try again.', 
+        success: false 
+      });
     }
   };
 
@@ -215,7 +247,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                                     <button 
                                         type="submit" 
                                         disabled={isUploading}
-                                        className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center"
+                                        className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         {isUploading ? <Loader2 className="animate-spin w-4 h-4" /> : "Verify Payment"}
                                     </button>
@@ -278,7 +310,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                                     <button 
                                         type="submit" 
                                         disabled={isUploading}
-                                        className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center"
+                                        className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         {isUploading ? <Loader2 className="animate-spin w-4 h-4" /> : "Re-submit Payment"}
                                     </button>
@@ -341,7 +373,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                             <button 
                                 type="submit" 
                                 disabled={isUploading}
-                                className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center"
+                                className="w-full py-2 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {isUploading ? <Loader2 className="animate-spin w-4 h-4" /> : "Re-upload Payment Proof"}
                             </button>
@@ -409,11 +441,17 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ user, paper })
                         )}
                       </div>
 
-                      <button type="submit" disabled={finalUploadState.loading} className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center">
-                        {finalUploadState.loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Submit Final Files"}
+                      <button type="submit" disabled={finalUploadState.loading} className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                        {finalUploadState.loading ? (
+                          <>
+                            <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                            Uploading...
+                          </>
+                        ) : "Submit Final Files"}
                       </button>
 
                       {finalUploadState.error && <p className="text-red-500 text-sm font-medium text-center">{finalUploadState.error}</p>}
+                      {finalUploadState.success && <p className="text-green-600 text-sm font-medium text-center">✅ Files uploaded successfully! Reloading...</p>}
                     </form>
                   </>
                 ) : (
